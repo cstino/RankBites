@@ -7,7 +7,9 @@ interface Restaurant {
     name: string
     category: string
     address: string
+    city: string | null
     overall_rating: number | null
+    category_ratings: Record<string, number> | null
     cover_photo_url: string | null
     ai_review: string | null
 }
@@ -18,16 +20,16 @@ interface RestaurantCardProps {
 }
 
 export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCardProps) {
-    const getRatingColor = (rating: number) => {
-        if (rating >= 8) return 'from-green-400 to-emerald-500'
-        if (rating >= 6) return 'from-yellow-400 to-orange-500'
-        return 'from-red-400 to-rose-500'
-    }
-
     const getRatingBg = (rating: number) => {
         if (rating >= 8) return 'bg-gradient-to-r from-green-400 to-emerald-500'
         if (rating >= 6) return 'bg-gradient-to-r from-yellow-400 to-orange-500'
         return 'bg-gradient-to-r from-red-400 to-rose-500'
+    }
+
+    const getCategoryRatingColor = (rating: number) => {
+        if (rating >= 8) return 'text-emerald-600 bg-emerald-50'
+        if (rating >= 6) return 'text-orange-600 bg-orange-50'
+        return 'text-red-600 bg-red-50'
     }
 
     return (
@@ -90,7 +92,7 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                     </h3>
                     <p className="text-sm text-stone-500 mt-1 flex items-center gap-1 line-clamp-1">
                         <span>📍</span>
-                        {restaurant.address}
+                        {restaurant.city || 'Posizione non disponibile'}
                     </p>
 
                     {/* AI Review Preview */}
@@ -100,22 +102,25 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                         </p>
                     )}
 
-                    {/* View button */}
+                    {/* Category Ratings & View button */}
                     <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <span
-                                    key={star}
-                                    className={`text-sm ${restaurant.overall_rating && star <= Math.round(restaurant.overall_rating / 2)
-                                            ? 'text-orange-400'
-                                            : 'text-stone-200'
-                                        }`}
-                                >
-                                    ★
-                                </span>
-                            ))}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {restaurant.category_ratings && ['Location', 'Menu', 'Servizio', 'Conto']
+                                .filter(cat => restaurant.category_ratings![cat] !== undefined)
+                                .map(cat => {
+                                    const rating = restaurant.category_ratings![cat]
+                                    return (
+                                        <span
+                                            key={cat}
+                                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${getCategoryRatingColor(rating)}`}
+                                            title={cat}
+                                        >
+                                            {cat.slice(0, 3)}: {rating.toFixed(1)}
+                                        </span>
+                                    )
+                                })}
                         </div>
-                        <span className="text-xs text-orange-500 font-medium group-hover:translate-x-1 transition-transform">
+                        <span className="text-xs text-orange-500 font-medium group-hover:translate-x-1 transition-transform flex-shrink-0">
                             Scopri →
                         </span>
                     </div>

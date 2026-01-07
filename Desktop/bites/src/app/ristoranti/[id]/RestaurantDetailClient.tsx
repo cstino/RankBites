@@ -76,22 +76,27 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
                             <h1 className="text-3xl md:text-4xl font-black text-stone-900 mt-2">
                                 {restaurant.name}
                             </h1>
-                            <p className="text-stone-500 mt-2 flex items-center gap-2">
-                                <span>📍</span>
-                                {restaurant.address || restaurant.city || 'Posizione non specificata'}
+                            <p className="text-stone-500 mt-2 flex items-center gap-2 flex-wrap">
+                                <span className="flex items-center gap-1">
+                                    <span>📍</span>
+                                    {restaurant.city || 'Posizione non specificata'}
+                                </span>
+                                {restaurant.maps_link && (
+                                    <>
+                                        <span className="text-stone-300">•</span>
+                                        <a
+                                            href={restaurant.maps_link.startsWith('http')
+                                                ? restaurant.maps_link
+                                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.maps_link)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-orange-500 hover:text-orange-600 font-medium"
+                                        >
+                                            Apri su Maps →
+                                        </a>
+                                    </>
+                                )}
                             </p>
-                            {restaurant.maps_link && (
-                                <a
-                                    href={restaurant.maps_link.startsWith('http')
-                                        ? restaurant.maps_link
-                                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.maps_link)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 mt-3 text-sm text-orange-500 hover:text-orange-600 font-medium"
-                                >
-                                    📍 Apri su Google Maps →
-                                </a>
-                            )}
                         </div>
 
                         {/* Overall Rating */}
@@ -132,28 +137,33 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
                         >
                             <h2 className="font-bold text-stone-900 mb-4 text-lg">Valutazioni per categoria</h2>
                             <div className="space-y-4">
-                                {Object.entries(restaurant.category_ratings).map(([name, score], index) => (
-                                    <motion.div
-                                        key={name}
-                                        className="flex items-center gap-4"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + index * 0.1 }}
-                                    >
-                                        <span className="w-24 text-stone-600 font-medium">{name}</span>
-                                        <div className="flex-1 bg-stone-100 rounded-full h-3 overflow-hidden">
+                                {['Location', 'Menu', 'Servizio', 'Conto']
+                                    .filter(name => restaurant.category_ratings[name] !== undefined)
+                                    .map((name, index) => {
+                                        const score = restaurant.category_ratings[name] as number
+                                        return (
                                             <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${(score as number) * 10}%` }}
-                                                transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
-                                                className={`h-full rounded-full bg-gradient-to-r ${getRatingBg(score as number)}`}
-                                            />
-                                        </div>
-                                        <span className={`w-10 text-right font-bold ${getRatingColor(score as number)}`}>
-                                            {(score as number).toFixed(1)}
-                                        </span>
-                                    </motion.div>
-                                ))}
+                                                key={name}
+                                                className="flex items-center gap-4"
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 0.4 + index * 0.1 }}
+                                            >
+                                                <span className="w-24 text-stone-600 font-medium">{name}</span>
+                                                <div className="flex-1 bg-stone-100 rounded-full h-3 overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${score * 10}%` }}
+                                                        transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
+                                                        className={`h-full rounded-full bg-gradient-to-r ${getRatingBg(score)}`}
+                                                    />
+                                                </div>
+                                                <span className={`w-10 text-right font-bold ${getRatingColor(score)}`}>
+                                                    {score.toFixed(1)}
+                                                </span>
+                                            </motion.div>
+                                        )
+                                    })}
                             </div>
                         </motion.div>
                     )}
