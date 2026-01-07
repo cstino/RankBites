@@ -4,6 +4,8 @@ import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Category } from '@/types'
+import RatingSelector from '@/components/ui/RatingSelector'
+import { useToast } from '@/components/ui/Toast'
 
 interface VoteFormProps {
     sessionId: string
@@ -41,6 +43,7 @@ export default function VoteForm({
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handleVoteChange = (categoryId: string, score: number) => {
         setVotes((prev) => ({ ...prev, [categoryId]: score }))
@@ -124,7 +127,7 @@ export default function VoteForm({
         const { error: voteError } = await supabase.from('votes').insert(voteData)
 
         if (voteError) {
-            setError(voteError.message)
+            showToast('error', 'Errore!', voteError.message)
             setLoading(false)
             return
         }
@@ -135,23 +138,13 @@ export default function VoteForm({
             .update({ has_voted: true, voted_at: new Date().toISOString() })
             .eq('session_id', sessionId)
 
-        setSuccess(true)
         setLoading(false)
+        showToast('success', 'Voto registrato!', 'Il tuo voto è stato salvato con successo.')
 
         setTimeout(() => {
             router.push('/admin/sessions')
             router.refresh()
         }, 1500)
-    }
-
-    if (success) {
-        return (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-                <p className="text-4xl mb-4">✅</p>
-                <p className="text-green-700 font-medium">Voto registrato con successo!</p>
-                <p className="text-green-600 text-sm mt-2">Reindirizzamento...</p>
-            </div>
-        )
     }
 
     return (
@@ -168,29 +161,16 @@ export default function VoteForm({
                 </div>
             )}
 
-            {/* Vote Sliders */}
+            {/* Vote Selectors */}
             <div className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100">
                 {categories.map((category) => (
-                    <div key={category.id} className="p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <label className="font-medium text-stone-900">{category.name}</label>
-                            <span className="text-2xl font-bold text-orange-500 w-12 text-right">
-                                {votes[category.id]}
-                            </span>
-                        </div>
-                        <input
-                            type="range"
-                            min="1"
-                            max="10"
+                    <div key={category.id} className="p-5">
+                        <label className="block font-medium text-stone-900 mb-3">{category.name}</label>
+                        <RatingSelector
                             value={votes[category.id]}
-                            onChange={(e) => handleVoteChange(category.id, parseInt(e.target.value))}
-                            className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                            onChange={(score) => handleVoteChange(category.id, score)}
+                            categoryName={category.name}
                         />
-                        <div className="flex justify-between text-xs text-stone-400 mt-1">
-                            <span>1</span>
-                            <span>5</span>
-                            <span>10</span>
-                        </div>
                     </div>
                 ))}
             </div>

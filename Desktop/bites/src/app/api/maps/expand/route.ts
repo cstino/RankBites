@@ -3,7 +3,7 @@ import OpenLocationCode from 'open-location-code'
 
 export async function POST(request: Request) {
     try {
-        const { url, type, query } = await request.json()
+        const { url, type, query, lat, lng } = await request.json()
 
         // Handle Geocoding request (using Nominatim)
         if (type === 'geocode' && query) {
@@ -33,6 +33,45 @@ export async function POST(request: Request) {
             }
         }
 
+        // Handle Reverse Geocoding request (lat/lng to city)
+        if (type === 'reverse' && lat && lng) {
+            console.log('📍 Reverse geocoding:', lat, lng)
+            try {
+                const reverseUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=10`
+                const response = await fetch(reverseUrl, {
+                    headers: {
+                        'User-Agent': 'RankBites-App/1.0'
+                    }
+                })
+
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log('📍 Reverse geocoding raw result:', JSON.stringify(data.address, null, 2))
+
+                    // Priority: city > town > municipality > village > county
+                    // In Italy, the "comune" is typically in town, city, or municipality
+                    const address = data.address || {}
+                    const city = address.city ||
+                        address.town ||
+                        address.municipality ||
+                        address.village ||
+                        address.county
+
+                    const result = {
+                        city: city || null,
+                        address: data.display_name,
+                        raw: address
+                    }
+                    console.log('📍 Reverse geocoding city:', city)
+                    return NextResponse.json(result)
+                }
+                return NextResponse.json({ error: 'Reverse geocoding failed' }, { status: 500 })
+            } catch (error) {
+                console.error('Reverse geocoding error:', error)
+                return NextResponse.json({ error: 'Errore reverse geocoding' }, { status: 500 })
+            }
+        }
+
         if (!url) {
             return NextResponse.json({ error: 'Input mancante' }, { status: 400 })
         }
@@ -55,34 +94,92 @@ export async function POST(request: Request) {
             const location = plusCodeMatch[2]
 
             console.log('📍 Plus Code detected:', plusCode)
-            console.log('📍 Location:', location)
+            console.log('📍 Reference location:', location)
 
-            // Parse city from location (format: "City, Province" or just "City")
+            // Parse location for fallback
             const locationParts = location.split(',').map((p: string) => p.trim())
-            result.city = locationParts[0]
+            const fallbackCity = locationParts[0]
             if (locationParts.length > 1) {
                 result.address = location
             }
 
-            // Try to decode Plus Code to coordinates
-            // Plus Codes need a reference location to be fully decoded
-            // We'll try to decode it assuming it's a full code
             try {
-                // For short Plus Codes, we need to get coordinates from Google Maps Geocoding API
-                // For now, we'll just store the location info and skip coordinate extraction
-                // In production, you'd use Google Geocoding API here
+                // First, geocode the reference location to get approximate coordinates
+                console.log('📍 Geocoding reference location...')
+                const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`
+                const geoResponse = await fetch(geoUrl, {
+                    headers: { 'User-Agent': 'RankBites-App/1.0' }
+                })
 
-                // Check if it's a full Plus Code (8+ characters before +)
-                if (plusCode.length >= 8) {
-                    const decoded = OpenLocationCode.decode(plusCode)
-                    if (decoded) {
-                        result.latitude = decoded.latitudeCenter.toFixed(6)
-                        result.longitude = decoded.longitudeCenter.toFixed(6)
-                        console.log('📍 Decoded coordinates:', result.latitude, result.longitude)
+                if (geoResponse.ok) {
+                    const geoData = await geoResponse.json()
+
+                    if (geoData && geoData.length > 0) {
+                        const refLat = parseFloat(geoData[0].lat)
+                        const refLng = parseFloat(geoData[0].lon)
+                        console.log('📍 Reference coordinates:', refLat, refLng)
+
+                        // Check if the Plus Code is full or short
+                        const beforePlus = plusCode.split('+')[0]
+                        let lat: number, lng: number
+
+                        if (beforePlus.length >= 8) {
+                            // Full Plus Code - decode directly
+                            console.log('📍 Full Plus Code, decoding...')
+                            const decoded = OpenLocationCode.decode(plusCode)
+                            lat = decoded.latitudeCenter
+                            lng = decoded.longitudeCenter
+                        } else {
+                            // Short Plus Code - use reference location coordinates
+                            // These are accurate enough for city-level reverse geocoding
+                            console.log('📍 Short Plus Code, using reference coordinates...')
+                            lat = refLat
+                            lng = refLng
+                        }
+
+                        result.latitude = lat.toFixed(6)
+                        result.longitude = lng.toFixed(6)
+                        console.log('📍 Final coordinates:', result.latitude, result.longitude)
+
+                        // Use reverse geocoding to get the correct municipality
+                        console.log('📍 Reverse geocoding for correct city...')
+                        const reverseUrl = `https://nominatim.openstreetmap.org/reverse?lat=${result.latitude}&lon=${result.longitude}&format=json&addressdetails=1&zoom=10`
+                        const reverseResponse = await fetch(reverseUrl, {
+                            headers: { 'User-Agent': 'RankBites-App/1.0' }
+                        })
+
+                        if (reverseResponse.ok) {
+                            const reverseData = await reverseResponse.json()
+                            console.log('📍 Reverse geocoding address:', JSON.stringify(reverseData.address, null, 2))
+
+                            // Priority: city > town > municipality > village > county
+                            const address = reverseData.address || {}
+                            const correctCity = address.city ||
+                                address.town ||
+                                address.municipality ||
+                                address.village ||
+                                address.county
+
+                            if (correctCity) {
+                                result.city = correctCity
+                                console.log('📍 Correct municipality:', correctCity)
+                            } else {
+                                result.city = fallbackCity
+                                console.log('📍 Using fallback city:', fallbackCity)
+                            }
+                        } else {
+                            result.city = fallbackCity
+                        }
+                    } else {
+                        console.log('📍 Could not geocode reference location, using fallback')
+                        result.city = fallbackCity
                     }
+                } else {
+                    result.city = fallbackCity
                 }
             } catch (e) {
-                console.log('📍 Could not decode Plus Code, using location only')
+                console.error('📍 Plus Code processing error:', e)
+                result.city = fallbackCity
             }
 
             return NextResponse.json(result)

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useToast } from '@/components/ui/Toast'
 
 interface SessionDetailProps {
     session: any
@@ -22,6 +23,7 @@ export default function SessionDetail({
     const [closing, setClosing] = useState(false)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handleCloseSession = async () => {
         if (!confirm('Sei sicuro di voler chiudere questa sessione? I voti saranno visibili a tutti.')) return
@@ -35,11 +37,12 @@ export default function SessionDetail({
 
         if (!response.ok) {
             const data = await response.json()
-            alert('Errore durante la chiusura: ' + (data.error || 'Errore sconosciuto'))
+            showToast('error', 'Errore!', 'Errore durante la chiusura: ' + (data.error || 'Errore sconosciuto'))
             setClosing(false)
             return
         }
 
+        showToast('success', 'Sessione chiusa!', 'I voti sono ora visibili a tutti.')
         router.refresh()
     }
 

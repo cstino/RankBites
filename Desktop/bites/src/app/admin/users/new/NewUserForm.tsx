@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Group } from '@/types'
+import { useToast } from '@/components/ui/Toast'
 
 export default function NewUserForm({ groups }: { groups: Group[] }) {
     const [name, setName] = useState('')
@@ -12,14 +13,13 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
     const [role, setRole] = useState<'admin' | 'super_admin'>('admin')
     const [selectedGroups, setSelectedGroups] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
 
         try {
             // Create auth user via API
@@ -40,10 +40,11 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
                 throw new Error(data.error || 'Errore durante la creazione')
             }
 
+            showToast('success', 'Admin creato!', `L'utente ${name} è stato creato con successo.`)
             router.push('/admin/users')
             router.refresh()
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Errore sconosciuto')
+            showToast('error', 'Errore!', err instanceof Error ? err.message : 'Errore sconosciuto')
         } finally {
             setLoading(false)
         }
@@ -59,11 +60,6 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                    {error}
-                </div>
-            )}
 
             <div>
                 <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -74,7 +70,7 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="fancy-input"
                     placeholder="Mario Rossi"
                 />
             </div>
@@ -88,7 +84,7 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="fancy-input"
                     placeholder="mario@example.com"
                 />
             </div>
@@ -103,7 +99,7 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="fancy-input"
                     placeholder="••••••••"
                 />
             </div>
@@ -115,7 +111,7 @@ export default function NewUserForm({ groups }: { groups: Group[] }) {
                 <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as 'admin' | 'super_admin')}
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="fancy-select"
                 >
                     <option value="admin">Admin</option>
                     <option value="super_admin">Super Admin</option>

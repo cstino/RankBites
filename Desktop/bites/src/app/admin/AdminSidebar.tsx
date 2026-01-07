@@ -36,8 +36,8 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
             href={href}
             onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive(href)
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25'
-                    : 'text-stone-700 hover:bg-stone-100'
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25'
+                : 'text-stone-700 hover:bg-stone-100'
                 }`}
         >
             <span className="text-xl">{icon}</span>
@@ -47,31 +47,80 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
 
     return (
         <>
-            {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 safe-area-pb">
-                <div className="flex justify-around py-2">
-                    {navItems.map((item) => (
+            {/* Mobile Bottom Navigation - Neumorphic Style */}
+            <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
+                <div className="flex bg-white px-3 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl">
+                    <div className="flex items-center gap-2">
+                        {/* Dashboard */}
                         <a
-                            key={item.href}
-                            href={item.href}
-                            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${isActive(item.href)
-                                    ? 'text-orange-500'
-                                    : 'text-stone-500'
-                                }`}
+                            href="/admin"
+                            className={`
+                                inline-flex items-center justify-center px-5 py-3.5 rounded-xl font-medium transition-all duration-200
+                                ${isActive('/admin') && pathname === '/admin'
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30'
+                                    : 'text-stone-400 hover:text-stone-600 bg-stone-50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)]'
+                                }
+                            `}
                         >
-                            <span className="text-2xl">{item.icon}</span>
-                            <span className="text-xs font-medium">{item.label}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                            </svg>
                         </a>
-                    ))}
-                    {role === 'super_admin' && (
-                        <button
-                            onClick={() => setMobileMenuOpen(true)}
-                            className="flex flex-col items-center gap-1 px-4 py-2 text-stone-500"
+
+                        {/* Sessions */}
+                        <a
+                            href="/admin/sessions"
+                            className={`
+                                inline-flex items-center justify-center px-5 py-3.5 rounded-xl font-medium transition-all duration-200
+                                ${pathname.startsWith('/admin/sessions')
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30'
+                                    : 'text-stone-400 hover:text-stone-600 bg-stone-50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)]'
+                                }
+                            `}
                         >
-                            <span className="text-2xl">⚙️</span>
-                            <span className="text-xs font-medium">Altro</span>
-                        </button>
-                    )}
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 13h-.68l-2 2h1.91L19 17H5l1.78-2h2.05l-2-2H6l-3 3v4c0 1.1.89 2 1.99 2H19c1.1 0 2-.89 2-2v-4l-3-3zm-1-5.05l-4.95 4.95-3.54-3.54 4.95-4.95 3.54 3.54zM13.95 3l-1.41 1.41 3.54 3.54 1.41-1.41c.78-.78.78-2.05 0-2.83l-.71-.71c-.78-.78-2.05-.78-2.83 0z" />
+                            </svg>
+                        </a>
+
+                        {/* Restaurants */}
+                        <a
+                            href="/admin/restaurants"
+                            className={`
+                                inline-flex items-center justify-center px-5 py-3.5 rounded-xl font-medium transition-all duration-200
+                                ${pathname.startsWith('/admin/restaurants')
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/30'
+                                    : 'text-stone-400 hover:text-stone-600 bg-stone-50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)]'
+                                }
+                            `}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
+                            </svg>
+                        </a>
+
+                        {/* Exit Admin - Go to Public Site */}
+                        <a
+                            href="/"
+                            className="inline-flex items-center justify-center px-5 py-3.5 rounded-xl text-stone-400 hover:text-red-500 bg-stone-50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-200"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+                            </svg>
+                        </a>
+
+                        {/* Settings (Super Admin) */}
+                        {role === 'super_admin' && (
+                            <button
+                                onClick={() => setMobileMenuOpen(true)}
+                                className="inline-flex items-center justify-center px-5 py-3.5 rounded-xl text-stone-400 hover:text-stone-600 bg-stone-50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-200"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

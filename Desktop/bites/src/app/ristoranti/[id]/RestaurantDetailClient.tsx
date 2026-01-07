@@ -113,7 +113,7 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
                         </motion.div>
                     </div>
 
-                    {/* AI Review */}
+                    {/* AI Review - TEMPORARILY HIDDEN
                     {restaurant.ai_review && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
@@ -127,6 +127,7 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
                             <p className="text-stone-700 leading-relaxed italic">"{restaurant.ai_review}"</p>
                         </motion.div>
                     )}
+                    */}
 
                     {/* Category Ratings */}
                     {restaurant.category_ratings && Object.keys(restaurant.category_ratings).length > 0 && (

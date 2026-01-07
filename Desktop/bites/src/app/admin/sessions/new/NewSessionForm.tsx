@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/Toast'
 
 interface Restaurant {
     id: string
@@ -29,17 +30,16 @@ export default function NewSessionForm({
     const [visitDate, setVisitDate] = useState('')
     const [selectedAdmins, setSelectedAdmins] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
 
         if (!restaurantId) {
-            setError('Seleziona un ristorante')
+            showToast('warning', 'Attenzione!', 'Seleziona un ristorante')
             setLoading(false)
             return
         }
@@ -57,7 +57,7 @@ export default function NewSessionForm({
             .single()
 
         if (sessionError) {
-            setError(sessionError.message)
+            showToast('error', 'Errore!', sessionError.message)
             setLoading(false)
             return
         }
@@ -76,11 +76,12 @@ export default function NewSessionForm({
             .insert(voters)
 
         if (votersError) {
-            setError(votersError.message)
+            showToast('error', 'Errore!', votersError.message)
             setLoading(false)
             return
         }
 
+        showToast('success', 'Sessione creata!', 'La sessione di voto è stata creata con successo.')
         router.push('/admin/sessions')
         router.refresh()
     }
@@ -95,11 +96,6 @@ export default function NewSessionForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                    {error}
-                </div>
-            )}
 
             <div>
                 <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -110,7 +106,7 @@ export default function NewSessionForm({
                         value={restaurantId}
                         onChange={(e) => setRestaurantId(e.target.value)}
                         required
-                        className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="fancy-select"
                     >
                         {restaurants.map((r) => (
                             <option key={r.id} value={r.id}>
@@ -136,7 +132,7 @@ export default function NewSessionForm({
                     type="date"
                     value={visitDate}
                     onChange={(e) => setVisitDate(e.target.value)}
-                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="fancy-input"
                 />
             </div>
 

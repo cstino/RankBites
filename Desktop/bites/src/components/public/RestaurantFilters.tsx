@@ -62,25 +62,25 @@ export default function RestaurantFilters({
                 {/* Search */}
                 <div className="flex-1 min-w-[150px]">
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">🔍</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">🔍</span>
                         <input
                             type="text"
                             name="search"
                             placeholder="Cerca..."
                             defaultValue={currentSearch}
-                            className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-stone-50 border-2 border-stone-200 rounded-2xl shadow-[0_0.25rem_#e7e5e4] text-stone-700 placeholder-stone-400 transition-all duration-300 hover:bg-stone-100 focus:outline-none focus:border-orange-400 focus:shadow-[0_0.35rem_#e7e5e4,inset_0_0_8px_rgba(251,146,60,0.1)] focus:-translate-y-0.5 text-sm"
                         />
                     </div>
                 </div>
 
                 {/* City Search */}
-                <div className="w-28">
+                <div className="w-32">
                     <input
                         type="text"
                         name="city"
                         placeholder="📍 Città"
                         defaultValue={currentCity}
-                        className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-200 rounded-2xl shadow-[0_0.25rem_#e7e5e4] text-stone-700 placeholder-stone-400 transition-all duration-300 hover:bg-stone-100 focus:outline-none focus:border-orange-400 focus:shadow-[0_0.35rem_#e7e5e4,inset_0_0_8px_rgba(251,146,60,0.1)] focus:-translate-y-0.5 text-sm"
                     />
                 </div>
 
@@ -89,7 +89,7 @@ export default function RestaurantFilters({
                     <select
                         name="category"
                         defaultValue={currentCategory}
-                        className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none cursor-pointer text-sm"
+                        className="w-full px-3 py-3 bg-stone-50 border-2 border-stone-200 rounded-2xl shadow-[0_0.25rem_#e7e5e4] text-stone-600 transition-all duration-300 hover:bg-stone-100 focus:outline-none focus:border-orange-400 focus:shadow-[0_0.35rem_#e7e5e4] focus:-translate-y-0.5 appearance-none cursor-pointer text-sm"
                     >
                         <option value="">Categoria</option>
                         {categories.map((cat) => (
@@ -105,7 +105,7 @@ export default function RestaurantFilters({
                     <select
                         name="minRating"
                         defaultValue={currentMinRating}
-                        className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none cursor-pointer text-sm"
+                        className="w-full px-3 py-3 bg-stone-50 border-2 border-stone-200 rounded-2xl shadow-[0_0.25rem_#e7e5e4] text-stone-600 transition-all duration-300 hover:bg-stone-100 focus:outline-none focus:border-orange-400 focus:shadow-[0_0.35rem_#e7e5e4] focus:-translate-y-0.5 appearance-none cursor-pointer text-sm"
                     >
                         <option value="">Min ⭐</option>
                         <option value="7">7+</option>

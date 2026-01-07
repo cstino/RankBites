@@ -3,27 +3,28 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/Toast'
 
 export default function NewGroupPage() {
     const [name, setName] = useState('')
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
 
         const { error } = await supabase.from('groups').insert({ name })
 
         if (error) {
-            setError(error.message)
+            showToast('error', 'Errore!', error.message)
             setLoading(false)
             return
         }
 
+        showToast('success', 'Gruppo creato!', `Il gruppo "${name}" è stato aggiunto.`)
         router.push('/admin/groups')
         router.refresh()
     }
@@ -43,11 +44,6 @@ export default function NewGroupPage() {
                 <h1 className="text-xl font-bold text-stone-900 mb-6">Nuovo Gruppo</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -58,7 +54,7 @@ export default function NewGroupPage() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            className="fancy-input"
                             placeholder="Es. Team Milano"
                         />
                     </div>

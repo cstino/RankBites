@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/Toast'
 
 interface CoverPhotoEditorProps {
     restaurantId: string
@@ -12,17 +13,16 @@ interface CoverPhotoEditorProps {
 export default function CoverPhotoEditor({ restaurantId, currentPhotoUrl }: CoverPhotoEditorProps) {
     const [photoUrl, setPhotoUrl] = useState(currentPhotoUrl)
     const [uploading, setUploading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
         setUploading(true)
-        setError(null)
 
         try {
             const fileExt = file.name.split('.').pop()
@@ -34,7 +34,7 @@ export default function CoverPhotoEditor({ restaurantId, currentPhotoUrl }: Cove
                 .upload(fileName, file)
 
             if (uploadError) {
-                setError(`Errore upload: ${uploadError.message}`)
+                showToast('error', 'Errore!', `Errore upload: ${uploadError.message}`)
                 setUploading(false)
                 return
             }
@@ -51,15 +51,16 @@ export default function CoverPhotoEditor({ restaurantId, currentPhotoUrl }: Cove
                 .eq('id', restaurantId)
 
             if (updateError) {
-                setError(`Errore aggiornamento: ${updateError.message}`)
+                showToast('error', 'Errore!', `Errore aggiornamento: ${updateError.message}`)
                 setUploading(false)
                 return
             }
 
             setPhotoUrl(urlData.publicUrl)
+            showToast('success', 'Foto aggiornata!', 'La foto di copertina è stata cambiata.')
             router.refresh()
         } catch (err) {
-            setError('Errore durante il caricamento')
+            showToast('error', 'Errore!', 'Errore durante il caricamento')
         }
 
         setUploading(false)
@@ -103,12 +104,6 @@ export default function CoverPhotoEditor({ restaurantId, currentPhotoUrl }: Cove
                 onChange={handlePhotoChange}
                 className="hidden"
             />
-
-            {error && (
-                <div className="absolute top-full left-0 mt-2 text-xs text-red-500 whitespace-nowrap">
-                    {error}
-                </div>
-            )}
         </div>
     )
 }

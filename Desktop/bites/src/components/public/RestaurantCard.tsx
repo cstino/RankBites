@@ -95,12 +95,13 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                         {restaurant.city || 'Posizione non disponibile'}
                     </p>
 
-                    {/* AI Review Preview */}
+                    {/* AI Review Preview - TEMPORARILY HIDDEN
                     {restaurant.ai_review && (
                         <p className="text-sm text-stone-600 mt-3 line-clamp-2 italic opacity-80">
                             "{restaurant.ai_review.slice(0, 80)}..."
                         </p>
                     )}
+                    */}
 
                     {/* Category Ratings & View button */}
                     <div className="mt-4 flex items-center justify-between">

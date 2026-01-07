@@ -24,3 +24,99 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Shake animation for invalid inputs */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Fancy Input Styling */
+.fancy-input {
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  background-color: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 1.5rem;
+  color: #57534e;
+  font-size: 1rem;
+  box-shadow: 0 6px #dfd9d9;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.fancy-input::placeholder {
+  color: #a8a29e;
+  transition: all 0.3s ease;
+}
+
+.fancy-input:hover {
+  background-color: #f9f9f9;
+}
+
+.fancy-input:focus {
+  outline: none;
+  border-color: #fb923c;
+  box-shadow: 0 8px #dfd9d9, inset 0 0 10px rgba(251, 146, 60, 0.15);
+  transform: translateY(-3px) scale(1.01);
+}
+
+.fancy-input:focus::placeholder {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.fancy-input:invalid:not(:placeholder-shown) {
+  border-color: #f87171;
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Fancy Select Styling */
+.fancy-select {
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  background-color: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 1.5rem;
+  color: #57534e;
+  font-size: 1rem;
+  box-shadow: 0 6px #dfd9d9;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a8a29e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.fancy-select:hover {
+  background-color: #f9f9f9;
+}
+
+.fancy-select:focus {
+  outline: none;
+  border-color: #fb923c;
+  box-shadow: 0 8px #dfd9d9, inset 0 0 10px rgba(251, 146, 60, 0.15);
+  transform: translateY(-3px) scale(1.01);
+}

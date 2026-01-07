@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useToast } from '@/components/ui/Toast'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false })
 
@@ -32,12 +33,12 @@ export default function NewRestaurantPage() {
     const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const [extractingInfo, setExtractingInfo] = useState(false)
     const [dataExtracted, setDataExtracted] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const supabase = createClient()
+    const { showToast } = useToast()
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -51,100 +52,115 @@ export default function NewRestaurantPage() {
         }
     }
 
-    // Improved geocoding: Try Name + City first, then just City
-    const geocodeLocation = async (cityName: string, restaurantName?: string) => {
+    // Reverse geocoding: get city from coordinates
+    const reverseGeocode = async (lat: string, lng: string) => {
         setExtractingInfo(true)
         try {
-            // Strategy 1: Search "Restaurant Name, City"
-            if (restaurantName) {
-                const query = `${restaurantName}, ${cityName}`
-                const response = await fetch('/api/maps/expand', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'geocode', query })
-                })
-
-                if (response.ok) {
-                    const data = await response.json()
-                    if (data.latitude && data.longitude) {
-                        setLatitude(data.latitude)
-                        setLongitude(data.longitude)
-                        setDataExtracted(true)
-                        setExtractingInfo(false)
-                        return // Found exact match!
-                    }
-                }
-            }
-
-            // Strategy 2: Search just "City" (Fallback)
             const response = await fetch('/api/maps/expand', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'geocode', query: cityName })
+                body: JSON.stringify({ type: 'reverse', lat, lng })
             })
 
             if (response.ok) {
                 const data = await response.json()
-                if (data.latitude && data.longitude) {
-                    setLatitude(data.latitude)
-                    setLongitude(data.longitude)
-                    setDataExtracted(true)
+                if (data.city) {
+                    setCity(data.city)
+                    console.log('📍 City from reverse geocoding:', data.city)
                 }
+                setDataExtracted(true)
             }
         } catch (error) {
-            console.error('Geocoding error:', error)
+            console.error('Reverse geocoding error:', error)
         }
         setExtractingInfo(false)
     }
 
-    // Extract city from Plus Code
+    // Handle Plus Code input - decode to coordinates, then reverse geocode
     const handlePlusCodeChange = async (value: string) => {
         setPlusCode(value)
 
-        // Try to extract city from Plus Code format: "XXXX+XX City, Province"
-        const match = value.match(/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\s+(.+)$/i)
+        // Check if it's a valid Plus Code format: "XXXX+XX City, Province"
+        const match = value.match(/^([A-Z0-9]{4,8}\+[A-Z0-9]{2,3})\s+(.+)$/i)
         if (match) {
-            const location = match[1]
-            const parts = location.split(',').map(p => p.trim())
-            if (parts.length >= 1) {
-                const newCity = parts[0]
-                setCity(newCity)
+            setExtractingInfo(true)
 
-                // Trigger geocoding for the full location string
-                await geocodeLocation(newCity, name)
+            try {
+                // Call API to decode Plus Code and get coordinates + correct city
+                const response = await fetch('/api/maps/expand', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: value })
+                })
+
+                if (response.ok) {
+                    const data = await response.json()
+
+                    // Set coordinates if available
+                    if (data.latitude && data.longitude) {
+                        setLatitude(data.latitude)
+                        setLongitude(data.longitude)
+                    }
+
+                    // Set city from reverse geocoding result (done server-side)
+                    if (data.city) {
+                        setCity(data.city)
+                        console.log('📍 City from API:', data.city)
+                    }
+
+                    setDataExtracted(true)
+                }
+            } catch (error) {
+                console.error('Plus Code processing error:', error)
             }
+
+            setExtractingInfo(false)
         }
     }
 
-    // Extract coordinates from Maps URL
-    const handleMapsLinkChange = (url: string) => {
+    // Extract coordinates from Maps URL, then reverse geocode for city
+    const handleMapsLinkChange = async (url: string) => {
         setMapsLink(url)
 
         if (!url) return
 
+        let lat: string | null = null
+        let lng: string | null = null
+
         // Extract coordinates from @lat,lng pattern
         const coordsMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
         if (coordsMatch) {
-            setLatitude(coordsMatch[1])
-            setLongitude(coordsMatch[2])
-            return
+            lat = coordsMatch[1]
+            lng = coordsMatch[2]
         }
 
         // Try !3d...!4d... pattern
-        const dataMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
-        if (dataMatch) {
-            setLatitude(dataMatch[1])
-            setLongitude(dataMatch[2])
+        if (!lat) {
+            const dataMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
+            if (dataMatch) {
+                lat = dataMatch[1]
+                lng = dataMatch[2]
+            }
+        }
+
+        // If we found coordinates, set them and reverse geocode for city
+        if (lat && lng) {
+            setLatitude(lat)
+            setLongitude(lng)
+
+            // Only reverse geocode if city is not already set
+            if (!city) {
+                await reverseGeocode(lat, lng)
+            }
         }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
 
         if (!name.trim()) {
-            setError('Inserisci il nome del ristorante')
+            showToast('warning', 'Attenzione!', 'Inserisci il nome del ristorante')
             setLoading(false)
             return
         }
@@ -161,7 +177,7 @@ export default function NewRestaurantPage() {
                 .upload(fileName, coverPhoto)
 
             if (uploadError) {
-                setError('Errore caricamento foto: ' + uploadError.message)
+                showToast('error', 'Errore!', 'Errore caricamento foto: ' + uploadError.message)
                 setLoading(false)
                 setUploading(false)
                 return
@@ -187,11 +203,12 @@ export default function NewRestaurantPage() {
         })
 
         if (error) {
-            setError(error.message)
+            showToast('error', 'Errore!', error.message)
             setLoading(false)
             return
         }
 
+        showToast('success', 'Ristorante creato!', 'Il ristorante è stato aggiunto con successo.')
         router.push('/admin/restaurants')
         router.refresh()
     }
@@ -213,12 +230,6 @@ export default function NewRestaurantPage() {
                 </div>
 
                 <div className="p-6">
-                    {error && (
-                        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-                            {error}
-                        </div>
-                    )}
-
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Cover Photo */}
                         <div>
@@ -261,7 +272,7 @@ export default function NewRestaurantPage() {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="fancy-input"
                                 placeholder="Es. Pizzeria Da Mario"
                             />
                         </div>
@@ -274,7 +285,7 @@ export default function NewRestaurantPage() {
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="fancy-select"
                             >
                                 {RESTAURANT_CATEGORIES.map((cat) => (
                                     <option key={cat} value={cat}>{cat}</option>
@@ -291,7 +302,7 @@ export default function NewRestaurantPage() {
                                 type="text"
                                 value={plusCode}
                                 onChange={(e) => handlePlusCodeChange(e.target.value)}
-                                className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="fancy-input !bg-white !border-blue-200 focus:!border-blue-500"
                                 placeholder="Es: JXJQ+36 Atri, Teramo"
                             />
                             {city && (
@@ -338,7 +349,7 @@ export default function NewRestaurantPage() {
                                 type="url"
                                 value={mapsLink}
                                 onChange={(e) => handleMapsLinkChange(e.target.value)}
-                                className="w-full px-4 py-3 bg-white border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                className="fancy-input !bg-white !border-orange-200"
                                 placeholder="https://maps.app.goo.gl/..."
                             />
                             {latitude && longitude && (

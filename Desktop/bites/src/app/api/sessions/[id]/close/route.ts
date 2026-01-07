@@ -100,7 +100,9 @@ export async function POST(
             .eq('id', session.restaurant_id)
 
         // Generate AI review
+        // TEMPORARILY DISABLED - uncomment to enable
         let aiReview = null
+        /*
         try {
             console.log('DEBUG - Generating AI review for:', restaurant?.name)
             console.log('DEBUG - Category ratings:', JSON.stringify(categoryRatings))
@@ -125,6 +127,7 @@ export async function POST(
             console.error('AI review error:', aiError)
             // Continue without AI review
         }
+        */
 
         return NextResponse.json({
             success: true,
