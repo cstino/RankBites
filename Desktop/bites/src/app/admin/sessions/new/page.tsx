@@ -24,7 +24,7 @@ export default async function NewSessionPage() {
         .order('name')
 
     return (
-        <div className="max-w-2xl">
+        <div className="max-w-2xl w-full overflow-hidden">
             <div className="mb-6">
                 <a
                     href="/admin/sessions"
@@ -34,7 +34,7 @@ export default async function NewSessionPage() {
                 </a>
             </div>
 
-            <div className="bg-white rounded-xl border border-stone-200 p-6">
+            <div className="bg-white rounded-xl border border-stone-200 p-6 overflow-hidden">
                 <h1 className="text-xl font-bold text-stone-900 mb-6">Nuova Sessione di Voto</h1>
                 <NewSessionForm
                     restaurants={restaurants || []}

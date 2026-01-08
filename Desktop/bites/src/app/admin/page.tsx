@@ -1,4 +1,34 @@
 import { createClient } from '@/lib/supabase/server'
+import { ReactNode } from 'react'
+
+// Icone SVG Material Design
+const icons = {
+    sessions: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 13h-.68l-2 2h1.91L19 17H5l1.78-2h2.05l-2-2H6l-3 3v4c0 1.1.89 2 1.99 2H19c1.1 0 2-.89 2-2v-4l-3-3zm-1-5.05l-4.95 4.95-3.54-3.54 4.95-4.95 3.54 3.54zM13.95 3l-1.41 1.41 3.54 3.54 1.41-1.41c.78-.78.78-2.05 0-2.83l-.71-.71c-.78-.78-2.05-.78-2.83 0z" />
+        </svg>
+    ),
+    check: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+    ),
+    restaurants: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
+        </svg>
+    ),
+    trophy: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
+        </svg>
+    ),
+    plate: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
+        </svg>
+    ),
+}
 
 export default async function AdminDashboard() {
     const supabase = await createClient()
@@ -45,21 +75,21 @@ export default async function AdminDashboard() {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <StatCard
-                    icon="🗳️"
+                    icon={icons.sessions}
                     label="Sessioni Aperte"
                     value={openSessionsCount || 0}
                     color="orange"
                     href="/admin/sessions"
                 />
                 <StatCard
-                    icon="✅"
+                    icon={icons.check}
                     label="Sessioni Chiuse"
                     value={closedSessionsCount || 0}
                     color="green"
                     href="/admin/sessions"
                 />
                 <StatCard
-                    icon="🍕"
+                    icon={icons.restaurants}
                     label="Ristoranti"
                     value={restaurantsCount || 0}
                     color="blue"
@@ -74,7 +104,9 @@ export default async function AdminDashboard() {
                     href="/admin/sessions/new"
                     className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl shadow-lg shadow-orange-500/25 hover:shadow-xl transition-all"
                 >
-                    <span className="text-2xl">🗳️</span>
+                    <span className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        {icons.sessions}
+                    </span>
                     <div>
                         <p className="font-semibold">Nuova Sessione</p>
                         <p className="text-xs text-white/80">Avvia una votazione</p>
@@ -84,7 +116,9 @@ export default async function AdminDashboard() {
                     href="/admin/restaurants/new"
                     className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-2xl hover:border-orange-300 hover:shadow-lg transition-all"
                 >
-                    <span className="text-2xl">🍕</span>
+                    <span className="w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white flex items-center justify-center">
+                        {icons.restaurants}
+                    </span>
                     <div>
                         <p className="font-semibold text-stone-900">Nuovo Ristorante</p>
                         <p className="text-xs text-stone-500">Aggiungi locale</p>
@@ -95,7 +129,10 @@ export default async function AdminDashboard() {
             {/* Open Sessions */}
             <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
                 <div className="px-4 py-3 border-b border-stone-100 flex justify-between items-center">
-                    <h2 className="font-semibold text-stone-900">🗳️ Sessioni Aperte</h2>
+                    <h2 className="font-semibold text-stone-900 flex items-center gap-2">
+                        <span className="text-orange-500">{icons.sessions}</span>
+                        Sessioni Aperte
+                    </h2>
                     <a href="/admin/sessions" className="text-sm text-orange-500 font-medium">
                         Vedi tutte →
                     </a>
@@ -125,7 +162,7 @@ export default async function AdminDashboard() {
                     </div>
                 ) : (
                     <div className="px-4 py-8 text-center text-stone-500">
-                        <p className="text-3xl mb-2">🍽️</p>
+                        <span className="text-3xl mb-2 block text-stone-300">{icons.plate}</span>
                         <p className="text-sm">Nessuna sessione aperta</p>
                     </div>
                 )}
@@ -135,7 +172,10 @@ export default async function AdminDashboard() {
             {topRestaurants && topRestaurants.length > 0 && (
                 <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
                     <div className="px-4 py-3 border-b border-stone-100 flex justify-between items-center">
-                        <h2 className="font-semibold text-stone-900">🏆 Top Ristoranti</h2>
+                        <h2 className="font-semibold text-stone-900 flex items-center gap-2">
+                            <span className="text-amber-500">{icons.trophy}</span>
+                            Top Ristoranti
+                        </h2>
                         <a href="/admin/restaurants" className="text-sm text-orange-500 font-medium">
                             Vedi tutti →
                         </a>
@@ -156,7 +196,9 @@ export default async function AdminDashboard() {
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center">🍽️</div>
+                                        <div className="w-full h-full flex items-center justify-center text-stone-400">
+                                            {icons.restaurants}
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -183,7 +225,7 @@ function StatCard({
     href,
     className = '',
 }: {
-    icon: string
+    icon: ReactNode
     label: string
     value: number
     color: 'orange' | 'green' | 'blue'
@@ -202,7 +244,7 @@ function StatCard({
             className={`bg-white rounded-2xl border border-stone-200 p-4 hover:shadow-lg transition-all ${className}`}
         >
             <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-gradient-to-r ${colorClasses[color]} text-white shadow-lg`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-r ${colorClasses[color]} text-white shadow-lg`}>
                     {icon}
                 </div>
                 <div>
@@ -213,3 +255,4 @@ function StatCard({
         </a>
     )
 }
+

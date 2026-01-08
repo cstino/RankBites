@@ -132,7 +132,7 @@ export default function NewSessionForm({
                     type="date"
                     value={visitDate}
                     onChange={(e) => setVisitDate(e.target.value)}
-                    className="fancy-input"
+                    className="fancy-input w-full"
                 />
             </div>
 
