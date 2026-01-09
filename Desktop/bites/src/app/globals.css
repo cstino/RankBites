@@ -332,52 +332,90 @@ input[type="date"].fancy-input {
   font-weight: 700;
 }
 
-/* Bottom Navigation */
-.bottom-nav {
+/* Bottom Navigation - TheFork Style */
+.thefork-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background: white;
-  border-top: 1px solid #e7e5e4;
-  padding: 0.5rem 0;
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   z-index: 40;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {
-  .bottom-nav {
+  .thefork-nav {
     display: none;
   }
 }
 
-.bottom-nav-item {
+.thefork-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: white;
+  border-radius: 50px;
+  padding: 0.5rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  gap: 0.5rem;
+  min-width: 280px;
+}
+
+.thefork-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.5rem 1rem;
   text-decoration: none;
+  padding: 0.25rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.thefork-nav-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.thefork-nav-icon svg {
+  width: 22px;
+  height: 22px;
   color: #78716c;
   transition: all 0.2s ease;
 }
 
-.bottom-nav-item-active {
-  color: #f97316;
+.thefork-nav-icon-active {
+  background: #00897b;
 }
 
-.bottom-nav-icon {
-  font-size: 1.5rem;
-  line-height: 1;
+.thefork-nav-icon-active svg {
+  color: white;
 }
 
-.bottom-nav-label {
-  font-size: 0.625rem;
+.thefork-nav-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #78716c;
+  transition: all 0.2s ease;
+}
+
+.thefork-nav-label-active {
+  color: #00897b;
   font-weight: 600;
+}
+
+.thefork-nav-item:hover .thefork-nav-icon:not(.thefork-nav-icon-active) svg {
+  color: #00897b;
+}
+
+.thefork-nav-item:hover .thefork-nav-label:not(.thefork-nav-label-active) {
+  color: #00897b;
 }
 
 /* Search Bar Clean Style */
@@ -526,4 +564,152 @@ input[type="date"].fancy-input {
 
 .header-clean .burger span {
   background: #1c1917;
+}
+
+/* Onboarding Styles - TheFork inspired */
+.onboarding-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #00463d;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.onboarding-skip {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  z-index: 10;
+}
+
+.onboarding-skip:hover {
+  color: white;
+}
+
+.onboarding-logo {
+  padding: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.onboarding-logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.onboarding-logo-accent {
+  color: #f97316;
+}
+
+.onboarding-slides {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.onboarding-slides-track {
+  display: flex;
+  flex-direction: row;
+  width: 300%;
+  height: 100%;
+  transition: transform 0.4s ease-out;
+}
+
+.onboarding-slide {
+  width: 33.333%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.onboarding-image-container {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-content {
+  background: white;
+  border-radius: 2rem 2rem 0 0;
+  padding: 2rem 1.5rem;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
+.onboarding-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1c1917;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.onboarding-description {
+  font-size: 1rem;
+  color: #78716c;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d6d3d1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.onboarding-dot-active {
+  background: #1c1917;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.onboarding-button {
+  width: 100%;
+  padding: 1rem;
+  background: #1c1917;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.onboarding-button:hover {
+  background: #292524;
+}
+
+.onboarding-button:active {
+  transform: scale(0.98);
 }

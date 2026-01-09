@@ -25,10 +25,10 @@ export default function Sidebar() {
                 const { data: profile } = await supabase
                     .from('users')
                     .select('role')
-                    .eq('auth_id', authUser.id)
+                    .eq('id', authUser.id)
                     .single()
 
-                setIsAdmin(profile?.role === 'admin')
+                setIsAdmin(profile?.role === 'admin' || profile?.role === 'super_admin')
             }
         }
 
@@ -36,8 +36,16 @@ export default function Sidebar() {
     }, [])
 
     const handleLogout = async () => {
-        const response = await fetch('/api/auth/signout', { method: 'POST' })
-        if (response.ok) {
+        try {
+            const response = await fetch('/api/auth/signout', {
+                method: 'POST',
+                redirect: 'manual'
+            })
+            // API returns redirect, so we follow it manually
+            window.location.href = '/'
+        } catch (err) {
+            console.error('Logout error:', err)
+            // Even if error, try to redirect
             window.location.href = '/'
         }
     }

@@ -10,13 +10,24 @@ interface CategoryPillsProps {
 
 // Map categories to custom icons
 const categoryIcons: Record<string, string> = {
-    'Tutti': '/icons/tutti.png',
-    'Pizzeria': '/icons/pizzeria.png',
-    'Fine Dining': '/icons/fine_dining.png',
+    'Pizzeria': '/icons/pizza.svg',
+    'Fine Dining': '/icons/raffinata.svg',
+    'Sushi': '/icons/sushi.svg',
+    'Giapponese': '/icons/sushi.svg',
+    'Asiatico': '/icons/asiatica.svg',
+    'Asiatica': '/icons/asiatica.svg',
+    'Cinese': '/icons/asiatica.svg',
+    'Hamburger': '/icons/hamburger.svg',
+    'Fast Food': '/icons/hamburger.svg',
+    'Pesce': '/icons/pesce.svg',
+    'Carne': '/icons/carne.svg',
+    'Trattoria': '/icons/trattoria.svg',
+    'Italiano': '/icons/trattoria.svg',
+    'Altro': '/icons/altro.svg',
 }
 
 // Fallback icon for categories without custom icons
-const defaultIcon = '/icons/tutti.png'
+const defaultIcon = '/icons/altro.svg'
 
 const getIconPath = (category: string): string => {
     return categoryIcons[category] || defaultIcon
@@ -30,6 +41,7 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
         const params = new URLSearchParams(searchParams.toString())
 
         if (currentCategory === category) {
+            // Deselect - torna a mostrare tutti
             params.delete('category')
         } else {
             params.set('category', category)
@@ -38,30 +50,9 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
         router.push(`/?${params.toString()}`)
     }
 
-    const handleClearAll = () => {
-        router.push('/')
-    }
-
     return (
         <div className="category-pills-container">
             <div className="category-pills">
-                {/* All / Clear filter */}
-                <button
-                    onClick={handleClearAll}
-                    className={`category-card ${!currentCategory ? 'category-card-active' : ''}`}
-                >
-                    <div className="category-card-box">
-                        <Image
-                            src="/icons/tutti.png"
-                            alt="Tutti"
-                            width={45}
-                            height={45}
-                            style={{ objectFit: 'contain' }}
-                        />
-                    </div>
-                    <span className="category-card-label">Tutti</span>
-                </button>
-
                 {categories.map((category) => {
                     const iconPath = getIconPath(category)
 
