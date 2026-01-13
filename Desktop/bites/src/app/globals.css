@@ -562,6 +562,16 @@ input[type="date"].fancy-input {
   z-index: 30;
 }
 
+.header-clean::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: white;
+}
+
 .header-clean .burger span {
   background: #1c1917;
 }
@@ -575,7 +585,7 @@ input[type="date"].fancy-input {
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: #00463d;
+  background: #014f3f;
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -634,25 +644,17 @@ input[type="date"].fancy-input {
 .onboarding-slide {
   width: 33.333%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  position: relative;
   flex-shrink: 0;
 }
 
 .onboarding-image-container {
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: none;
 }
 
 .onboarding-content {
-  background: white;
-  border-radius: 2rem 2rem 0 0;
+  background: transparent;
+  border-radius: 0;
   padding: 2rem 1.5rem;
   padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
 }
@@ -660,14 +662,14 @@ input[type="date"].fancy-input {
 .onboarding-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1c1917;
+  color: white;
   margin-bottom: 0.75rem;
   line-height: 1.2;
 }
 
 .onboarding-description {
   font-size: 1rem;
-  color: #78716c;
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
   margin-bottom: 1.5rem;
 }
@@ -682,13 +684,13 @@ input[type="date"].fancy-input {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #d6d3d1;
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .onboarding-dot-active {
-  background: #1c1917;
+  background: white;
   width: 24px;
   border-radius: 4px;
 }
@@ -696,8 +698,8 @@ input[type="date"].fancy-input {
 .onboarding-button {
   width: 100%;
   padding: 1rem;
-  background: #1c1917;
-  color: white;
+  background: white;
+  color: #014f3f;
   border: none;
   border-radius: 999px;
   font-size: 1rem;
@@ -707,7 +709,7 @@ input[type="date"].fancy-input {
 }
 
 .onboarding-button:hover {
-  background: #292524;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .onboarding-button:active {

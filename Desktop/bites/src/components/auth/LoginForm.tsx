@@ -52,7 +52,7 @@ export default function LoginForm() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                        placeholder="admin@example.com"
+                        placeholder="email@esempio.com"
                     />
                 </div>
 
@@ -92,3 +92,4 @@ export default function LoginForm() {
         </div>
     )
 }
+

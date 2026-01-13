@@ -65,35 +65,38 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                         </span>
                     </div>
 
-                    {/* Rating Badge */}
-                    {restaurant.overall_rating && (
-                        <motion.div
-                            className="absolute top-3 right-3"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: index * 0.1 + 0.3, type: 'spring' }}
-                        >
-                            <div className={`w-12 h-12 rounded-xl ${getRatingBg(restaurant.overall_rating)} flex items-center justify-center shadow-lg`}>
-                                <span className="text-white font-bold text-lg">
-                                    {restaurant.overall_rating.toFixed(1)}
-                                </span>
-                            </div>
-                        </motion.div>
-                    )}
-
                     {/* Gradient overlay */}
                     <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/50 to-transparent" />
                 </div>
 
                 {/* Content */}
                 <div className="p-4">
-                    <h3 className="font-bold text-lg text-stone-900 group-hover:text-orange-600 transition-colors line-clamp-1">
-                        {restaurant.name}
-                    </h3>
-                    <p className="text-sm text-stone-500 mt-1 flex items-center gap-1 line-clamp-1">
-                        <span>📍</span>
-                        {restaurant.city || 'Posizione non disponibile'}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-lg text-stone-900 group-hover:text-orange-600 transition-colors line-clamp-1">
+                                {restaurant.name}
+                            </h3>
+                            <p className="text-sm text-stone-500 mt-1 flex items-center gap-1 line-clamp-1">
+                                <span>📍</span>
+                                {restaurant.city || 'Posizione non disponibile'}
+                            </p>
+                        </div>
+                        {/* Rating Badge - aligned with name */}
+                        {restaurant.overall_rating && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: index * 0.1 + 0.3, type: 'spring' }}
+                                className="flex-shrink-0"
+                            >
+                                <div className={`w-12 h-12 rounded-xl ${getRatingBg(restaurant.overall_rating)} flex items-center justify-center shadow-lg`}>
+                                    <span className="text-white font-bold text-lg">
+                                        {restaurant.overall_rating.toFixed(1)}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
 
                     {/* AI Review Preview - TEMPORARILY HIDDEN
                     {restaurant.ai_review && (

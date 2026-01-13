@@ -57,18 +57,6 @@ export default function SearchBar({ currentSearch, currentCity, currentNearMe }:
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <button
-                    type="button"
-                    onClick={handleNearMe}
-                    disabled={loading}
-                    className={`p-2 rounded-lg transition-colors ${currentNearMe
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-stone-100 text-stone-500 hover:bg-orange-100 hover:text-orange-500'
-                        }`}
-                    title="Vicino a me"
-                >
-                    {loading ? '⏳' : '📍'}
-                </button>
             </form>
         </div>
     )

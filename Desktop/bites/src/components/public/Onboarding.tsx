@@ -14,7 +14,7 @@ const slides = [
         description: 'Un gruppo selezionato di food lover valuta i ristoranti in modo onesto e imparziale'
     },
     {
-        image: '/images/onboarding-2.png',
+        image: '/images/onboarding-2-transparent.png',
         title: 'Valutazioni dettagliate',
         description: 'Scopri le recensioni per Location, Menu, Servizio e Conto. Tutto quello che conta davvero.'
     },
@@ -84,28 +84,33 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
             {/* Logo */}
             <div className="onboarding-logo">
-                <span className="onboarding-logo-text">Rank<span className="onboarding-logo-accent">Bites</span></span>
+                <Image
+                    src="/logo.svg"
+                    alt="RankBites"
+                    width={180}
+                    height={40}
+                    style={{ filter: 'brightness(0) invert(1)' }}
+                    priority
+                />
             </div>
 
             {/* Slides */}
             <div className="onboarding-slides">
                 <div
                     className="onboarding-slides-track"
-                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                    style={{ transform: `translateX(-${currentSlide * 100 / 3}%)` }}
                 >
                     {slides.map((slide, index) => (
-                        <div key={index} className="onboarding-slide">
-                            <div className="onboarding-image-container">
-                                <Image
-                                    src={slide.image}
-                                    alt={slide.title}
-                                    width={350}
-                                    height={350}
-                                    style={{ objectFit: 'contain' }}
-                                    priority={index === 0}
-                                />
-                            </div>
-                        </div>
+                        <div
+                            key={index}
+                            className="onboarding-slide"
+                            style={{
+                                backgroundImage: `url(${slide.image})`,
+                                backgroundSize: '85%',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        />
                     ))}
                 </div>
             </div>

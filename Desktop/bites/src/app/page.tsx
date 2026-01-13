@@ -78,14 +78,7 @@ export default async function HomePage({
           <Sidebar />
         </header>
 
-        {/* Location Selector */}
-        <div className="location-selector">
-          <span>📍</span>
-          <span className="location-selector-text">
-            {params.city || 'Tutte le città'}
-          </span>
-          <span className="location-selector-arrow">▼</span>
-        </div>
+
 
         {/* Search Bar */}
         <SearchBar

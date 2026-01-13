@@ -9,17 +9,17 @@ export default function LoginPage() {
                 {/* Logo/Brand */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <img src="/logo.svg" alt="RankBites" className="h-12" />
+                        <img
+                            src="/logo.svg"
+                            alt="RankBites"
+                            className="h-12"
+                            style={{ filter: 'brightness(0) invert(1)' }}
+                        />
                     </div>
-                    <p className="text-stone-400">Admin Area</p>
                 </div>
 
                 {/* Login Form */}
                 <LoginForm />
-
-                <p className="text-center text-stone-500 text-sm mt-6">
-                    Solo admin autorizzati
-                </p>
             </div>
         </div>
     )
