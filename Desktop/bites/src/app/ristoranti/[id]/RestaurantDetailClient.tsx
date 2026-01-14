@@ -19,8 +19,8 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
 
     const getRatingBg = (rating: number) => {
         if (rating >= 9) return 'from-sky-400 to-violet-500'      // 9-10: azzurro-viola
-        if (rating >= 7) return 'from-green-500 to-green-700'     // 7-8: verde-verde scuro
-        if (rating >= 6) return 'from-lime-400 to-green-500'      // 6: verde chiaro-verde
+        if (rating >= 7) return 'from-lime-400 to-green-500'     // 7-8: verde chiaro-verde
+        if (rating >= 6) return 'from-yellow-400 to-lime-400'    // 6: giallo-verde chiaro
         if (rating >= 5) return 'from-orange-400 to-yellow-400'   // 5: arancione-giallo
         if (rating >= 3) return 'from-red-500 to-red-600'         // 3-4: rosso-rosso fuoco
         return 'from-rose-800 to-red-600'                         // 1-2: bordeaux-rosso
