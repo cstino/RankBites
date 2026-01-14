@@ -21,12 +21,11 @@ interface RestaurantCardProps {
 
 export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCardProps) {
     const getRatingBg = (rating: number) => {
-        if (rating >= 9) return 'bg-gradient-to-r from-sky-400 to-violet-500'      // 9-10: azzurro-viola
-        if (rating >= 7) return 'bg-gradient-to-r from-lime-400 to-green-500'     // 7-8: verde chiaro-verde
-        if (rating >= 6) return 'bg-gradient-to-r from-yellow-400 to-lime-400'    // 6: giallo-verde chiaro
-        if (rating >= 5) return 'bg-gradient-to-r from-orange-400 to-yellow-400'   // 5: arancione-giallo
-        if (rating >= 3) return 'bg-gradient-to-r from-red-500 to-red-600'         // 3-4: rosso-rosso fuoco
-        return 'bg-gradient-to-r from-rose-800 to-red-600'                         // 1-2: bordeaux-rosso
+        if (rating >= 9) return 'bg-gradient-to-r from-sky-400 to-blue-500'        // 9-10: azzurro
+        if (rating >= 7) return 'bg-gradient-to-r from-green-400 to-green-600'     // 7-8: verde
+        if (rating >= 5) return 'bg-gradient-to-r from-yellow-400 to-amber-500'    // 5-6: giallo
+        if (rating >= 3) return 'bg-gradient-to-r from-red-400 to-red-600'         // 3-4: rosso
+        return 'bg-gradient-to-r from-stone-700 to-stone-900'                      // 1-2: nero
     }
 
     const getCategoryRatingColor = (rating: number) => {
