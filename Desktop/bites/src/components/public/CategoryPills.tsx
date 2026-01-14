@@ -40,14 +40,26 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
     const router = useRouter()
     const searchParams = useSearchParams()
 
+    // Parse current categories from comma-separated string
+    const selectedCategories = currentCategory ? currentCategory.split(',') : []
+
     const handleCategoryClick = (category: string) => {
         const params = new URLSearchParams(searchParams.toString())
 
-        if (currentCategory === category) {
-            // Deselect - torna a mostrare tutti
+        let newSelected: string[]
+
+        if (selectedCategories.includes(category)) {
+            // Remove from selection
+            newSelected = selectedCategories.filter(c => c !== category)
+        } else {
+            // Add to selection
+            newSelected = [...selectedCategories, category]
+        }
+
+        if (newSelected.length === 0) {
             params.delete('category')
         } else {
-            params.set('category', category)
+            params.set('category', newSelected.join(','))
         }
 
         router.push(`/?${params.toString()}`)
@@ -58,12 +70,13 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
             <div className="category-pills">
                 {categories.map((category) => {
                     const emoji = getEmoji(category)
+                    const isActive = selectedCategories.includes(category)
 
                     return (
                         <button
                             key={category}
                             onClick={() => handleCategoryClick(category)}
-                            className={`category-card ${currentCategory === category ? 'category-card-active' : ''}`}
+                            className={`category-card ${isActive ? 'category-card-active' : ''}`}
                         >
                             <div className="category-card-box">
                                 <span className="text-3xl">{emoji}</span>

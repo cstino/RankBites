@@ -25,8 +25,9 @@ export default async function HomePage({
     .not('overall_rating', 'is', null)
 
   if (params.category) {
-    // category is now an array, use contains operator
-    query = query.contains('category', [params.category])
+    // category param is comma-separated, filter restaurants that have ANY of the selected categories
+    const selectedCategories = params.category.split(',')
+    query = query.overlaps('category', selectedCategories)
   }
   if (params.minRating) {
     query = query.gte('overall_rating', parseFloat(params.minRating))
