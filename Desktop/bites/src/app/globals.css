@@ -301,17 +301,17 @@ input[type="date"].fancy-input {
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   flex-shrink: 0;
-  background-color: #063525;
-  border: 3px solid #42c498;
+  background-color: #3f3f46;
+  border: 3px solid #a1a1aa;
   border-radius: 12px;
   box-shadow: 4px 4px 1px #000000;
 }
 
 .category-card:hover {
-  background-color: #1a5c46;
-  border-color: #030504;
+  background-color: #52525b;
+  border-color: #d4d4d8;
   transform: translate(-4px, -4px) rotate(1deg);
-  box-shadow: 8px 8px 0 #000000, 12px 12px 15px rgba(64, 164, 122, 0.2);
+  box-shadow: 8px 8px 0 #000000, 12px 12px 15px rgba(161, 161, 170, 0.2);
 }
 
 .category-card:active {
