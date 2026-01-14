@@ -1,36 +1,39 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import Image from 'next/image'
 
 interface CategoryPillsProps {
     categories: string[]
     currentCategory?: string
 }
 
-// Map categories to custom icons
-const categoryIcons: Record<string, string> = {
-    'Pizzeria': '/icons/pizza.svg',
-    'Fine Dining': '/icons/raffinata.svg',
-    'Sushi': '/icons/sushi.svg',
-    'Giapponese': '/icons/sushi.svg',
-    'Asiatico': '/icons/asiatica.svg',
-    'Asiatica': '/icons/asiatica.svg',
-    'Cinese': '/icons/asiatica.svg',
-    'Hamburger': '/icons/hamburger.svg',
-    'Fast Food': '/icons/hamburger.svg',
-    'Pesce': '/icons/pesce.svg',
-    'Carne': '/icons/carne.svg',
-    'Trattoria': '/icons/trattoria.svg',
-    'Italiano': '/icons/trattoria.svg',
-    'Altro': '/icons/altro.svg',
+// Map categories to emojis
+const categoryEmojis: Record<string, string> = {
+    'Pizzeria': '🍕',
+    'Ristorante Italiano': '🍝',
+    'Sushi': '🍣',
+    'Giapponese': '🍣',
+    'Asiatico': '🥡',
+    'Asiatica': '🥡',
+    'Cinese': '🥡',
+    'Steakhouse': '🥩',
+    'Hamburger': '🍔',
+    'Fast Food': '🍔',
+    'Pesce': '🐟',
+    'Carne': '🍖',
+    'Trattoria': '🍲',
+    'Italiano': '🍝',
+    'Pub': '🍺',
+    'Fine Dining': '🍷',
+    'Paninoteca': '🥪',
+    'Vegetariano': '🥗',
+    'Messicano': '🌮',
+    'Indiano': '🍛',
+    'Altro': '🍽️',
 }
 
-// Fallback icon for categories without custom icons
-const defaultIcon = '/icons/altro.svg'
-
-const getIconPath = (category: string): string => {
-    return categoryIcons[category] || defaultIcon
+const getEmoji = (category: string): string => {
+    return categoryEmojis[category] || '🍽️'
 }
 
 export default function CategoryPills({ categories, currentCategory }: CategoryPillsProps) {
@@ -54,7 +57,7 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
         <div className="category-pills-container">
             <div className="category-pills">
                 {categories.map((category) => {
-                    const iconPath = getIconPath(category)
+                    const emoji = getEmoji(category)
 
                     return (
                         <button
@@ -63,13 +66,7 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
                             className={`category-card ${currentCategory === category ? 'category-card-active' : ''}`}
                         >
                             <div className="category-card-box">
-                                <Image
-                                    src={iconPath}
-                                    alt={category}
-                                    width={45}
-                                    height={45}
-                                    style={{ objectFit: 'contain' }}
-                                />
+                                <span className="text-3xl">{emoji}</span>
                             </div>
                             <span className="category-card-label">{category}</span>
                         </button>
@@ -79,3 +76,4 @@ export default function CategoryPills({ categories, currentCategory }: CategoryP
         </div>
     )
 }
+
