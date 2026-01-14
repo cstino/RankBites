@@ -9,20 +9,19 @@ interface RestaurantDetailClientProps {
 
 export default function RestaurantDetailClient({ restaurant, photos }: RestaurantDetailClientProps) {
     const getRatingColor = (rating: number) => {
-        if (rating >= 9) return 'text-violet-500'
-        if (rating >= 7) return 'text-green-600'
-        if (rating >= 6) return 'text-green-500'
-        if (rating >= 5) return 'text-orange-500'
-        if (rating >= 3) return 'text-red-500'
-        return 'text-rose-700'
+        if (rating >= 9) return 'text-blue-500'    // 9-10: azzurro
+        if (rating >= 7) return 'text-green-500'   // 7-8: verde
+        if (rating >= 5) return 'text-amber-500'   // 5-6: giallo
+        if (rating >= 3) return 'text-red-500'     // 3-4: rosso
+        return 'text-stone-700'                    // 1-2: nero
     }
 
     const getRatingBg = (rating: number) => {
         if (rating >= 9) return 'from-sky-400 to-blue-500'        // 9-10: azzurro
-        if (rating >= 7) return 'from-green-400 to-green-600'     // 7-8: verde
+        if (rating >= 7) return 'from-green-400 to-green-500'     // 7-8: verde
         if (rating >= 5) return 'from-yellow-400 to-amber-500'    // 5-6: giallo
-        if (rating >= 3) return 'from-red-400 to-red-600'         // 3-4: rosso
-        return 'from-stone-700 to-stone-900'                      // 1-2: nero
+        if (rating >= 3) return 'from-red-400 to-red-500'         // 3-4: rosso
+        return 'from-stone-600 to-stone-800'                      // 1-2: nero
     }
 
     return (
