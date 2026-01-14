@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -128,7 +129,7 @@ export default function BottomNav() {
                 {allItems.map((item) => {
                     const active = isActive(item.path)
                     return (
-                        <a
+                        <Link
                             key={item.label}
                             href={item.href}
                             className={`thefork-nav-item ${active ? 'thefork-nav-item-active' : ''}`}
@@ -139,10 +140,11 @@ export default function BottomNav() {
                             <span className={`thefork-nav-label ${active ? 'thefork-nav-label-active' : ''}`}>
                                 {item.label}
                             </span>
-                        </a>
+                        </Link>
                     )
                 })}
             </div>
         </nav>
     )
 }
+

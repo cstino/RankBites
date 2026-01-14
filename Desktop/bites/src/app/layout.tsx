@@ -21,8 +21,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   other: {
-    "theme-color": "#f97316",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "theme-color": "#ffffff",
+    "apple-mobile-web-app-status-bar-style": "default",
   },
 };
 
@@ -36,8 +36,8 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#f97316" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#ffffff" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
