@@ -143,19 +143,19 @@ export default async function AdminDashboard() {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                     <AdminCard
-                        href="/admin/restaurants"
-                        icon={icons.restaurants}
-                        title="Ristoranti"
-                        description={`${restaurantsCount || 0} locali`}
-                        color="blue"
-                    />
-                    <AdminCard
                         href="/admin/restaurants/new"
                         icon={icons.newRestaurant}
                         title="Nuovo Ristorante"
                         description="Aggiungi locale"
                         color="teal"
                         highlight
+                    />
+                    <AdminCard
+                        href="/admin/restaurants"
+                        icon={icons.restaurants}
+                        title="Ristoranti"
+                        description={`${restaurantsCount || 0} locali`}
+                        color="blue"
                     />
                 </div>
             </section>
