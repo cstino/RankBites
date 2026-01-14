@@ -12,10 +12,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  background: #ffffff;
+  min-height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 body {
   background: #ffffff;
   color: #171717;
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  margin: 0;
 }
 
 /* Shake animation for invalid inputs */
