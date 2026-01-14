@@ -25,7 +25,8 @@ export default async function HomePage({
     .not('overall_rating', 'is', null)
 
   if (params.category) {
-    query = query.eq('category', params.category)
+    // category is now an array, use contains operator
+    query = query.contains('category', [params.category])
   }
   if (params.minRating) {
     query = query.gte('overall_rating', parseFloat(params.minRating))
@@ -56,13 +57,15 @@ export default async function HomePage({
       .sort((a, b) => (a.distance || 999) - (b.distance || 999))
   }
 
-  // Get unique categories
+  // Get unique categories from all restaurants (category is now an array)
   const { data: allRestaurants } = await supabase
     .from('restaurants')
     .select('category')
     .not('overall_rating', 'is', null)
 
-  const categories = [...new Set(allRestaurants?.map((r) => r.category) || [])]
+  // Flatten all category arrays and get unique values
+  const allCategories = allRestaurants?.flatMap(r => r.category || []) || []
+  const categories = [...new Set(allCategories)]
 
   return (
     <OnboardingWrapper>
