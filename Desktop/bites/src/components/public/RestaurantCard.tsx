@@ -21,15 +21,21 @@ interface RestaurantCardProps {
 
 export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCardProps) {
     const getRatingBg = (rating: number) => {
-        if (rating >= 8) return 'bg-gradient-to-r from-green-400 to-emerald-500'
-        if (rating >= 6) return 'bg-gradient-to-r from-yellow-400 to-orange-500'
-        return 'bg-gradient-to-r from-red-400 to-rose-500'
+        if (rating >= 9) return 'bg-gradient-to-r from-sky-400 to-violet-500'      // 9-10: azzurro-viola
+        if (rating >= 7) return 'bg-gradient-to-r from-green-500 to-green-700'     // 7-8: verde-verde scuro
+        if (rating >= 6) return 'bg-gradient-to-r from-lime-400 to-green-500'      // 6: verde chiaro-verde
+        if (rating >= 5) return 'bg-gradient-to-r from-orange-400 to-yellow-400'   // 5: arancione-giallo
+        if (rating >= 3) return 'bg-gradient-to-r from-red-500 to-red-600'         // 3-4: rosso-rosso fuoco
+        return 'bg-gradient-to-r from-rose-800 to-red-600'                         // 1-2: bordeaux-rosso
     }
 
     const getCategoryRatingColor = (rating: number) => {
-        if (rating >= 8) return 'text-emerald-600 bg-emerald-50'
-        if (rating >= 6) return 'text-orange-600 bg-orange-50'
-        return 'text-red-600 bg-red-50'
+        if (rating >= 9) return 'text-violet-600 bg-violet-50'
+        if (rating >= 7) return 'text-green-700 bg-green-50'
+        if (rating >= 6) return 'text-green-500 bg-green-50'
+        if (rating >= 5) return 'text-orange-500 bg-orange-50'
+        if (rating >= 3) return 'text-red-500 bg-red-50'
+        return 'text-rose-700 bg-rose-50'
     }
 
     // Handle both string and array for backwards compatibility
