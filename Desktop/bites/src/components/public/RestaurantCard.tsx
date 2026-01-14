@@ -126,25 +126,9 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                     )}
                     */}
 
-                    {/* Category Ratings & View button */}
-                    <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            {restaurant.category_ratings && ['Location', 'Menu', 'Servizio', 'Conto']
-                                .filter(cat => restaurant.category_ratings![cat] !== undefined)
-                                .map(cat => {
-                                    const rating = restaurant.category_ratings![cat]
-                                    return (
-                                        <span
-                                            key={cat}
-                                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${getCategoryRatingColor(rating)}`}
-                                            title={cat}
-                                        >
-                                            {cat.slice(0, 3)}: {rating.toFixed(1)}
-                                        </span>
-                                    )
-                                })}
-                        </div>
-                        <span className="text-xs text-orange-500 font-medium group-hover:translate-x-1 transition-transform flex-shrink-0">
+                    {/* View button */}
+                    <div className="mt-4 flex items-center justify-end">
+                        <span className="text-xs text-orange-500 font-medium group-hover:translate-x-1 transition-transform">
                             Scopri →
                         </span>
                     </div>
