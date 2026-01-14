@@ -290,56 +290,93 @@ input[type="date"].fancy-input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  background: transparent;
-  border: none;
+  justify-content: center;
+  width: 80px;
+  height: 90px;
+  background-color: #f5f5f4;
+  border: 2px solid #d6d3d1;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #a8a29e;
   cursor: pointer;
-  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   flex-shrink: 0;
 }
 
-.category-card:hover .category-card-box {
-  transform: scale(1.03);
-  box-shadow: 10px 10px 20px #d1d1d1,
-    -10px -10px 20px #ffffff;
+.category-card:hover {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 #78716c;
 }
 
-.category-card:active .category-card-box {
-  box-shadow: inset 5px 5px 10px #d1d1d1,
-    inset -5px -5px 10px #ffffff;
+.category-card:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 #a8a29e;
 }
 
-.category-card-active .category-card-box {
-  box-shadow: 8px 8px 16px #d1d1d1,
-    -8px -8px 16px #ffffff;
+/* Active/Selected state */
+.category-card-active {
+  background-color: #ea580c;
+  border-color: #c2410c;
+  box-shadow: 4px 4px 0 #9a3412;
+}
+
+.category-card-active:hover {
+  background-color: #f97316;
+  border-color: #ea580c;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #9a3412;
+}
+
+/* Shine effect */
+.category-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
+  transition: 0.5s;
+}
+
+.category-card:hover::before {
+  left: 100%;
 }
 
 .category-card-box {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
-  background: #e8e8e8;
-  box-shadow: 8px 8px 16px #d1d1d1,
-    -8px -8px 16px #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 2;
+}
+
+.category-card:hover .category-card-box {
+  transform: scale(1.1);
 }
 
 .category-card-label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #57534e;
   white-space: nowrap;
   text-align: center;
-  max-width: 80px;
+  max-width: 70px;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.3s ease;
+  z-index: 2;
+  margin-top: 4px;
 }
 
 .category-card-active .category-card-label {
-  color: #ea580c;
+  color: #ffffff;
   font-weight: 700;
 }
 
