@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ReactNode } from 'react'
-import AdminSidebar from './AdminSidebar'
+import BottomNav from '@/components/public/BottomNav'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
     const supabase = await createClient()
@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         .single()
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-50">
+        <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-50 page-with-bottom-nav">
             {/* Top Navigation */}
             <nav className="bg-white/80 backdrop-blur-lg border-b border-stone-200/50 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,13 +54,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 </div>
             </nav>
 
-            {/* Mobile Navigation */}
-            <AdminSidebar role={profile?.role} />
-
             {/* Main Content */}
-            <main className="md:ml-64 p-4 md:p-8">
+            <main className="p-4 md:p-8 max-w-4xl mx-auto">
                 {children}
             </main>
+
+            {/* Bottom Navigation - same as public pages */}
+            <BottomNav />
         </div>
     )
 }
+
