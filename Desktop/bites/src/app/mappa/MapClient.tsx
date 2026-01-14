@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 
 // Import Leaflet CSS
@@ -11,6 +11,7 @@ interface Restaurant {
     name: string
     category: string
     address: string
+    city: string | null
     overall_rating: number
     cover_photo_url: string | null
     latitude: number
@@ -19,6 +20,7 @@ interface Restaurant {
 
 interface MapClientProps {
     restaurants: Restaurant[]
+    categories: string[]
 }
 
 // Dynamically import MapContainer to avoid SSR issues
@@ -39,9 +41,11 @@ const Popup = dynamic(
     { ssr: false }
 )
 
-export default function MapClient({ restaurants }: MapClientProps) {
+export default function MapClient({ restaurants, categories }: MapClientProps) {
     const [mounted, setMounted] = useState(false)
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
     useEffect(() => {
         setMounted(true)
@@ -66,13 +70,24 @@ export default function MapClient({ restaurants }: MapClientProps) {
         }
     }, [])
 
+    // Filter restaurants based on search and category
+    const filteredRestaurants = useMemo(() => {
+        return restaurants.filter(r => {
+            const matchesSearch = searchQuery === '' ||
+                r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (r.city && r.city.toLowerCase().includes(searchQuery.toLowerCase()))
+            const matchesCategory = !selectedCategory || r.category === selectedCategory
+            return matchesSearch && matchesCategory
+        })
+    }, [restaurants, searchQuery, selectedCategory])
+
     // Default center (Italy)
     const defaultCenter: [number, number] = [41.9028, 12.4964]
 
     // Calculate center from restaurants or use user location
     const center = userLocation ||
-        (restaurants.length > 0
-            ? [restaurants[0].latitude, restaurants[0].longitude] as [number, number]
+        (filteredRestaurants.length > 0
+            ? [filteredRestaurants[0].latitude, filteredRestaurants[0].longitude] as [number, number]
             : defaultCenter)
 
     const getRatingColor = (rating: number) => {
@@ -101,7 +116,7 @@ export default function MapClient({ restaurants }: MapClientProps) {
                 </a>
                 <div className="flex items-center gap-3">
                     <span className="text-sm text-stone-500">
-                        {restaurants.length} ristoranti
+                        {filteredRestaurants.length} ristoranti
                     </span>
                     <a
                         href="/"
@@ -112,22 +127,66 @@ export default function MapClient({ restaurants }: MapClientProps) {
                 </div>
             </header>
 
+            {/* Search Bar */}
+            <div className="bg-white px-4 py-3 border-b border-stone-100">
+                <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">🔍</span>
+                    <input
+                        type="text"
+                        placeholder="Cerca ristorante o città..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                </div>
+            </div>
+
+            {/* Category Pills */}
+            <div className="bg-white px-4 py-2 border-b border-stone-100 overflow-x-auto">
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setSelectedCategory(null)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedCategory
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                            }`}
+                    >
+                        Tutti
+                    </button>
+                    {categories.map((category) => (
+                        <button
+                            key={category}
+                            onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                }`}
+                        >
+                            {category}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* Map */}
             <div className="flex-1 relative bg-white">
-                {restaurants.length === 0 ? (
+                {filteredRestaurants.length === 0 ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
                         <div className="text-center p-6">
                             <span className="text-6xl mb-4 block">📍</span>
-                            <h2 className="text-xl font-bold text-stone-800 mb-2">Nessun ristorante con coordinate</h2>
+                            <h2 className="text-xl font-bold text-stone-800 mb-2">Nessun ristorante trovato</h2>
                             <p className="text-stone-500 mb-4">
-                                Aggiungi latitudine e longitudine ai ristoranti per vederli sulla mappa.
+                                Prova a modificare i filtri di ricerca.
                             </p>
-                            <a
-                                href="/"
+                            <button
+                                onClick={() => {
+                                    setSearchQuery('')
+                                    setSelectedCategory(null)
+                                }}
                                 className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
                             >
-                                Torna alla lista
-                            </a>
+                                Rimuovi filtri
+                            </button>
                         </div>
                     </div>
                 ) : (
@@ -141,7 +200,7 @@ export default function MapClient({ restaurants }: MapClientProps) {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        {restaurants.map((restaurant) => (
+                        {filteredRestaurants.map((restaurant) => (
                             <Marker
                                 key={restaurant.id}
                                 position={[restaurant.latitude, restaurant.longitude]}
@@ -167,7 +226,7 @@ export default function MapClient({ restaurants }: MapClientProps) {
                                                 {restaurant.overall_rating.toFixed(1)}
                                             </div>
                                         </div>
-                                        <p className="text-xs text-stone-400 mt-1">{restaurant.address}</p>
+                                        <p className="text-xs text-stone-400 mt-1">{restaurant.city || restaurant.address}</p>
                                         <a
                                             href={`/ristoranti/${restaurant.id}`}
                                             className="block mt-2 text-center text-sm text-orange-500 hover:text-orange-600 font-medium"
@@ -184,3 +243,4 @@ export default function MapClient({ restaurants }: MapClientProps) {
         </div>
     )
 }
+
