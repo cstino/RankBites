@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 interface Restaurant {
     id: string
     name: string
-    category: string
+    category: string | string[]
     address: string
     city: string | null
     overall_rating: number | null
@@ -31,6 +31,11 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
         if (rating >= 6) return 'text-orange-600 bg-orange-50'
         return 'text-red-600 bg-red-50'
     }
+
+    // Handle both string and array for backwards compatibility
+    const categories = Array.isArray(restaurant.category)
+        ? restaurant.category
+        : [restaurant.category]
 
     return (
         <motion.a
@@ -58,11 +63,21 @@ export default function RestaurantCard({ restaurant, index = 0 }: RestaurantCard
                         </div>
                     )}
 
-                    {/* Category Badge */}
-                    <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-medium text-stone-700 rounded-full shadow-sm">
-                            {restaurant.category}
-                        </span>
+                    {/* Category Badges */}
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+                        {categories.slice(0, 2).map((cat, i) => (
+                            <span
+                                key={i}
+                                className="px-2 py-1 bg-white/90 backdrop-blur-sm text-xs font-medium text-stone-700 rounded-full shadow-sm"
+                            >
+                                {cat}
+                            </span>
+                        ))}
+                        {categories.length > 2 && (
+                            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-xs font-medium text-stone-500 rounded-full shadow-sm">
+                                +{categories.length - 2}
+                            </span>
+                        )}
                     </div>
 
                     {/* Gradient overlay */}

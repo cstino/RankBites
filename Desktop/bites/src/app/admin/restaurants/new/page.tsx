@@ -5,25 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/components/ui/Toast'
+import CategoryMultiSelect from '@/components/admin/CategoryMultiSelect'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false })
 
-const RESTAURANT_CATEGORIES = [
-    'Pizzeria',
-    'Ristorante Italiano',
-    'Sushi',
-    'Steakhouse',
-    'Pub',
-    'Fine Dining',
-    'Fast Food',
-    'Trattoria',
-    'Paninoteca',
-    'Altro',
-]
-
 export default function NewRestaurantPage() {
     const [name, setName] = useState('')
-    const [category, setCategory] = useState(RESTAURANT_CATEGORIES[0])
+    const [categories, setCategories] = useState<string[]>([])
     const [city, setCity] = useState('')
     const [plusCode, setPlusCode] = useState('')
     const [mapsLink, setMapsLink] = useState('')
@@ -193,7 +181,7 @@ export default function NewRestaurantPage() {
 
         const { error } = await supabase.from('restaurants').insert({
             name: name.trim(),
-            category,
+            category: categories.length > 0 ? categories : ['Altro'],
             address: plusCode || null,
             city: city || null,
             latitude: latitude ? parseFloat(latitude) : null,
@@ -279,18 +267,13 @@ export default function NewRestaurantPage() {
 
                         {/* Category */}
                         <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">
-                                📋 Categoria
+                            <label className="block text-sm font-medium text-stone-700 mb-3">
+                                📋 Categorie
                             </label>
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="fancy-select"
-                            >
-                                {RESTAURANT_CATEGORIES.map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
+                            <CategoryMultiSelect
+                                selectedCategories={categories}
+                                onChange={setCategories}
+                            />
                         </div>
 
                         {/* Plus Code */}
