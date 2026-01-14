@@ -194,7 +194,7 @@ export default async function AdminDashboard() {
                             color="pink"
                         />
                         <AdminCard
-                            href="/admin/categories"
+                            href="/admin/restaurant-categories"
                             icon={icons.restaurantCategories}
                             title="Tipi Ristorante"
                             description="Pizzeria, Sushi..."
