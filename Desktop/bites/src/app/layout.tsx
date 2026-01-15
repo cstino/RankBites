@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Suspense, ReactNode } from "react";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import BottomNav from "@/components/public/BottomNav";
 
 export const metadata: Metadata = {
   title: "RankBites - Recensioni Ristoranti",
@@ -29,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="it">
@@ -39,10 +35,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {/* Google Fonts: Zalando Sans Expanded */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@300;400;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <ToastProvider>
-          {children}
+          <div className="page-with-bottom-nav">
+            {children}
+          </div>
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
         </ToastProvider>
       </body>
     </html>

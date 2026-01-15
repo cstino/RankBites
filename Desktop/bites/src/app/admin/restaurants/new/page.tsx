@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/components/ui/Toast'
 import CategoryMultiSelect from '@/components/admin/CategoryMultiSelect'
+import CityAutocomplete from '@/components/admin/CityAutocomplete'
 
 const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false })
 
@@ -13,7 +14,6 @@ export default function NewRestaurantPage() {
     const [name, setName] = useState('')
     const [categories, setCategories] = useState<string[]>([])
     const [city, setCity] = useState('')
-    const [plusCode, setPlusCode] = useState('')
     const [mapsLink, setMapsLink] = useState('')
     const [latitude, setLatitude] = useState('')
     const [longitude, setLongitude] = useState('')
@@ -64,47 +64,7 @@ export default function NewRestaurantPage() {
         setExtractingInfo(false)
     }
 
-    // Handle Plus Code input - decode to coordinates, then reverse geocode
-    const handlePlusCodeChange = async (value: string) => {
-        setPlusCode(value)
 
-        // Check if it's a valid Plus Code format: "XXXX+XX City, Province"
-        const match = value.match(/^([A-Z0-9]{4,8}\+[A-Z0-9]{2,3})\s+(.+)$/i)
-        if (match) {
-            setExtractingInfo(true)
-
-            try {
-                // Call API to decode Plus Code and get coordinates + correct city
-                const response = await fetch('/api/maps/expand', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: value })
-                })
-
-                if (response.ok) {
-                    const data = await response.json()
-
-                    // Set coordinates if available
-                    if (data.latitude && data.longitude) {
-                        setLatitude(data.latitude)
-                        setLongitude(data.longitude)
-                    }
-
-                    // Set city from reverse geocoding result (done server-side)
-                    if (data.city) {
-                        setCity(data.city)
-                        console.log('📍 City from API:', data.city)
-                    }
-
-                    setDataExtracted(true)
-                }
-            } catch (error) {
-                console.error('Plus Code processing error:', error)
-            }
-
-            setExtractingInfo(false)
-        }
-    }
 
     // Extract coordinates from Maps URL, then reverse geocode for city
     const handleMapsLinkChange = async (url: string) => {
@@ -182,7 +142,7 @@ export default function NewRestaurantPage() {
         const { error } = await supabase.from('restaurants').insert({
             name: name.trim(),
             category: categories.length > 0 ? categories : ['Altro'],
-            address: plusCode || null,
+            address: null,
             city: city || null,
             latitude: latitude ? parseFloat(latitude) : null,
             longitude: longitude ? parseFloat(longitude) : null,
@@ -276,26 +236,18 @@ export default function NewRestaurantPage() {
                             />
                         </div>
 
-                        {/* Plus Code */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <label className="block text-sm font-semibold text-blue-800 mb-2">
-                                📍 Plus Code (per città)
+                        {/* City Selection */}
+                        <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
+                            <label className="block text-sm font-semibold text-stone-800 mb-2">
+                                🏙️ Città e Provincia
                             </label>
-                            <input
-                                type="text"
-                                value={plusCode}
-                                onChange={(e) => handlePlusCodeChange(e.target.value)}
-                                className="fancy-input !bg-white !border-blue-200 focus:!border-blue-500"
-                                placeholder="Es: JXJQ+36 Atri, Teramo"
+                            <CityAutocomplete
+                                selectedCity={city}
+                                onCityChange={setCity}
                             />
                             {city && (
                                 <p className="text-xs text-green-600 mt-2">
-                                    ✓ Città rilevata: {city}
-                                </p>
-                            )}
-                            {extractingInfo && (
-                                <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
-                                    <span className="animate-spin">⏳</span> Ricerca coordinate...
+                                    ✓ Selezionato: {city}
                                 </p>
                             )}
                         </div>

@@ -91,9 +91,11 @@ export default function MapClient({ restaurants, categories }: MapClientProps) {
             : defaultCenter)
 
     const getRatingColor = (rating: number) => {
-        if (rating >= 8) return '#22c55e'
-        if (rating >= 6) return '#eab308'
-        return '#ef4444'
+        if (rating >= 9) return '#38bdf8' // sky-400 - azzurro
+        if (rating >= 7) return '#22c55e' // green-500 - verde
+        if (rating >= 5) return '#f59e0b' // amber-500 - giallo
+        if (rating >= 3) return '#ef4444' // red-500 - rosso
+        return '#57534e' // stone-600 - nero
     }
 
     if (!mounted) {
@@ -147,8 +149,8 @@ export default function MapClient({ restaurants, categories }: MapClientProps) {
                     <button
                         onClick={() => setSelectedCategory(null)}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedCategory
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                             }`}
                     >
                         Tutti
@@ -158,8 +160,8 @@ export default function MapClient({ restaurants, categories }: MapClientProps) {
                             key={category}
                             onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                                    ? 'bg-orange-500 text-white'
-                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                                 }`}
                         >
                             {category}
@@ -197,8 +199,8 @@ export default function MapClient({ restaurants, categories }: MapClientProps) {
                         className="w-full h-full absolute inset-0 z-0"
                     >
                         <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                         />
                         {filteredRestaurants.map((restaurant) => (
                             <Marker
@@ -206,34 +208,31 @@ export default function MapClient({ restaurants, categories }: MapClientProps) {
                                 position={[restaurant.latitude, restaurant.longitude]}
                             >
                                 <Popup>
-                                    <div className="min-w-[200px]">
+                                    <a
+                                        href={`/ristoranti/${restaurant.id}`}
+                                        className="block min-w-[180px] cursor-pointer"
+                                    >
                                         {restaurant.cover_photo_url && (
                                             <img
                                                 src={restaurant.cover_photo_url}
                                                 alt={restaurant.name}
-                                                className="w-full h-24 object-cover rounded-lg mb-2"
+                                                className="w-full h-20 object-cover rounded-lg mb-2"
                                             />
                                         )}
                                         <div className="flex items-start justify-between gap-2">
-                                            <div>
-                                                <h3 className="font-bold text-stone-900">{restaurant.name}</h3>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-bold text-stone-900 text-sm line-clamp-1">{restaurant.name}</h3>
                                                 <p className="text-xs text-stone-500">{restaurant.category}</p>
+                                                <p className="text-xs text-stone-400">{restaurant.city || restaurant.address}</p>
                                             </div>
                                             <div
-                                                className="px-2 py-1 rounded-lg text-white text-sm font-bold"
+                                                className="px-2 py-1 rounded-lg text-white text-xs font-bold shrink-0"
                                                 style={{ backgroundColor: getRatingColor(restaurant.overall_rating) }}
                                             >
                                                 {restaurant.overall_rating.toFixed(1)}
                                             </div>
                                         </div>
-                                        <p className="text-xs text-stone-400 mt-1">{restaurant.city || restaurant.address}</p>
-                                        <a
-                                            href={`/ristoranti/${restaurant.id}`}
-                                            className="block mt-2 text-center text-sm text-orange-500 hover:text-orange-600 font-medium"
-                                        >
-                                            Vedi dettagli →
-                                        </a>
-                                    </div>
+                                    </a>
                                 </Popup>
                             </Marker>
                         ))}

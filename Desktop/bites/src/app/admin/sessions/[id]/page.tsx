@@ -115,7 +115,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
             session={fullSession}
             isOwner={isOwner}
             currentUserId={user.id}
-            votes={votes}
+            votes={votes ?? null}
             categoryAverages={categoryAverages}
         />
     )

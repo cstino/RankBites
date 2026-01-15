@@ -19,3 +19,5 @@ export default async function MapPage() {
 
     return <MapClient restaurants={restaurants || []} categories={categories} />
 }
+
+

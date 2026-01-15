@@ -27,13 +27,28 @@ export default function BottomNav() {
                     const isAdminRole = profile?.role === 'admin' || profile?.role === 'super_admin'
                     console.log('BottomNav isAdmin:', isAdminRole)
                     setIsAdmin(isAdminRole)
+                } else {
+                    setIsAdmin(false)
                 }
             } catch (err) {
                 console.error('BottomNav checkAdmin error:', err)
+                setIsAdmin(false)
             }
         }
 
+        // Check admin status on mount
         checkAdmin()
+
+        // Listen for auth changes (login/logout)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            console.log('BottomNav auth state changed:', _event, session?.user?.id)
+            checkAdmin()
+        })
+
+        // Cleanup subscription on unmount
+        return () => {
+            subscription.unsubscribe()
+        }
     }, [])
 
     const isActive = (path: string) => {

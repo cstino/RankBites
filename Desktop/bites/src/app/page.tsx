@@ -1,80 +1,146 @@
 import { createClient } from '@/lib/supabase/server'
-import RestaurantCard from '@/components/public/RestaurantCard'
+import RestaurantCardSmall from '@/components/public/RestaurantCardSmall'
+import HorizontalSection from '@/components/public/HorizontalSection'
 import CategoryPills from '@/components/public/CategoryPills'
-import BottomNav from '@/components/public/BottomNav'
 import InstallPWABanner from '@/components/ui/InstallPWABanner'
 import Sidebar from '@/components/public/Sidebar'
 import SearchBar from '@/components/public/SearchBar'
 import OnboardingWrapper from '@/components/public/OnboardingWrapper'
-import { calculateDistance } from '@/hooks/useGeolocation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; minRating?: string; search?: string; city?: string; nearMe?: string; lat?: string; lng?: string }>
+  searchParams: Promise<{ category?: string; search?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
 
-  // Build query
-  let query = supabase
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Top Rated (by overall_rating)
+  const { data: topRated } = await supabase
     .from('restaurants')
     .select('*')
     .not('overall_rating', 'is', null)
+    .order('overall_rating', { ascending: false })
+    .limit(10)
 
-  if (params.category) {
-    // category param is comma-separated, filter restaurants that have ANY of the selected categories
-    const selectedCategories = params.category.split(',')
-    query = query.overlaps('category', selectedCategories)
+  // Nuovi (by created_at)
+  const { data: newest } = await supabase
+    .from('restaurants')
+    .select('*')
+    .not('overall_rating', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  // Best Location (by category_ratings->Location)
+  const { data: bestLocation } = await supabase
+    .from('restaurants')
+    .select('*')
+    .not('category_ratings', 'is', null)
+    .order('category_ratings->Location', { ascending: false })
+    .limit(10)
+
+  // Best Menu (by category_ratings->Menu)
+  const { data: bestMenu } = await supabase
+    .from('restaurants')
+    .select('*')
+    .not('category_ratings', 'is', null)
+    .order('category_ratings->Menu', { ascending: false })
+    .limit(10)
+
+  // User-specific data (only if logged in)
+  let visitedRestaurants: any[] = []
+  let favoriteRestaurants: any[] = []
+
+  if (user) {
+    // Visited: restaurants where user has voted
+    const { data: userVotes } = await supabase
+      .from('votes')
+      .select('session_id')
+      .eq('user_id', user.id)
+
+    if (userVotes && userVotes.length > 0) {
+      const sessionIds = [...new Set(userVotes.map(v => v.session_id))]
+
+      const { data: sessions } = await supabase
+        .from('voting_sessions')
+        .select('restaurant_id')
+        .in('id', sessionIds)
+
+      if (sessions && sessions.length > 0) {
+        const restaurantIds = [...new Set(sessions.map(s => s.restaurant_id))]
+
+        const { data: visited } = await supabase
+          .from('restaurants')
+          .select('*')
+          .in('id', restaurantIds)
+          .not('overall_rating', 'is', null)
+
+        visitedRestaurants = visited || []
+      }
+    }
+
+    // Favorites
+    const { data: favorites } = await supabase
+      .from('user_favorites')
+      .select('restaurant_id')
+      .eq('user_id', user.id)
+
+    if (favorites && favorites.length > 0) {
+      const favIds = favorites.map(f => f.restaurant_id)
+
+      const { data: favRestaurants } = await supabase
+        .from('restaurants')
+        .select('*')
+        .in('id', favIds)
+        .not('overall_rating', 'is', null)
+
+      favoriteRestaurants = favRestaurants || []
+    }
   }
-  if (params.minRating) {
-    query = query.gte('overall_rating', parseFloat(params.minRating))
-  }
-  if (params.search) {
-    query = query.ilike('name', `%${params.search}%`)
-  }
-  if (params.city) {
-    query = query.ilike('city', `%${params.city}%`)
-  }
 
-  // Default order by rating
-  query = query.order('overall_rating', { ascending: false })
-
-  let { data: restaurants } = await query
-
-  // If nearMe, calculate and sort by distance
-  if (params.nearMe && params.lat && params.lng && restaurants) {
-    const userLat = parseFloat(params.lat)
-    const userLng = parseFloat(params.lng)
-
-    restaurants = restaurants
-      .filter(r => r.latitude && r.longitude)
-      .map(r => ({
-        ...r,
-        distance: calculateDistance(userLat, userLng, r.latitude, r.longitude)
-      }))
-      .sort((a, b) => (a.distance || 999) - (b.distance || 999))
-  }
-
-  // Get unique categories from all restaurants (category is now an array)
+  // Get unique categories for pills
   const { data: allRestaurants } = await supabase
     .from('restaurants')
     .select('category')
     .not('overall_rating', 'is', null)
 
-  // Flatten all category arrays and get unique values
   const allCategories = allRestaurants?.flatMap(r => r.category || []) || []
   const categories = [...new Set(allCategories)]
 
+  // If search or category filter, show filtered results
+  const hasFilters = params.search || params.category
+  let filteredRestaurants: any[] = []
+
+  if (hasFilters) {
+    let query = supabase
+      .from('restaurants')
+      .select('*')
+      .not('overall_rating', 'is', null)
+
+    if (params.category) {
+      const selectedCategories = params.category.split(',')
+      query = query.overlaps('category', selectedCategories)
+    }
+    if (params.search) {
+      query = query.ilike('name', `%${params.search}%`)
+    }
+
+    query = query.order('overall_rating', { ascending: false })
+    const { data } = await query
+    filteredRestaurants = data || []
+  }
+
   return (
     <OnboardingWrapper>
-      <div className="min-h-screen bg-white page-with-bottom-nav">
-        {/* PWA Install Banner */}
+      <div className="min-h-screen bg-white">
         <InstallPWABanner />
 
-        {/* Clean Header */}
+        {/* Header */}
         <header className="header-clean">
           <a href="/" className="flex items-center">
             <img src="/logo.svg" alt="RankBites" className="h-7" />
@@ -82,78 +148,87 @@ export default async function HomePage({
           <Sidebar />
         </header>
 
-
-
         {/* Search Bar */}
-        <SearchBar
-          currentSearch={params.search}
-          currentCity={params.city}
-          currentNearMe={params.nearMe}
-        />
+        <SearchBar currentSearch={params.search} />
 
         {/* Category Pills */}
-        <CategoryPills
-          categories={categories}
-          currentCategory={params.category}
-        />
+        <CategoryPills categories={categories} currentCategory={params.category} />
 
-        {/* Active Filters Info */}
-        {(params.minRating || params.nearMe) && (
-          <div className="px-4 mb-4">
-            <div className="flex flex-wrap gap-2">
-              {params.minRating && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-600 text-sm font-medium rounded-full">
-                  ⭐ {params.minRating}+ stelle
-                  <a href={`/?${new URLSearchParams({ ...params, minRating: '' }).toString()}`} className="ml-1 hover:text-orange-800">×</a>
-                </span>
+        {/* Content */}
+        <main className="pb-24">
+          {hasFilters ? (
+            // Filtered Results
+            <div className="px-4">
+              <h2 className="text-lg font-bold text-stone-900 mb-4">
+                Risultati <span className="text-stone-400 font-normal">({filteredRestaurants.length})</span>
+              </h2>
+              {filteredRestaurants.length > 0 ? (
+                <div className="flex flex-col gap-4">
+                  {filteredRestaurants.map((restaurant, index) => (
+                    <RestaurantCardSmall key={restaurant.id} restaurant={restaurant} index={index} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <span className="text-4xl">🍽️</span>
+                  <p className="text-stone-500 mt-2">Nessun ristorante trovato</p>
+                  <a href="/" className="text-orange-500 hover:text-orange-600 mt-2 inline-block">
+                    Rimuovi filtri →
+                  </a>
+                </div>
               )}
-              {params.nearMe && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-600 text-sm font-medium rounded-full">
-                  📍 Vicino a me
-                  <a href="/" className="ml-1 hover:text-green-800">×</a>
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Main Content */}
-        <main className="px-4 pb-8">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-stone-900">
-              {params.category || 'Ristoranti'}
-              <span className="text-stone-400 font-normal ml-2">({restaurants?.length || 0})</span>
-            </h2>
-          </div>
-
-          {/* Restaurant List */}
-          {restaurants && restaurants.length > 0 ? (
-            <div className="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-              {restaurants.map((restaurant, index) => (
-                <RestaurantCard key={restaurant.id} restaurant={restaurant} index={index} />
-              ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-stone-100 mb-4">
-                <span className="text-3xl">🍽️</span>
-              </div>
-              <p className="text-stone-500">Nessun ristorante trovato</p>
-              {(params.category || params.minRating || params.search) && (
-                <a
-                  href="/"
-                  className="inline-block mt-4 text-orange-500 hover:text-orange-600 font-medium"
-                >
-                  Rimuovi filtri →
-                </a>
+            // Homepage Sections
+            <>
+              {/* Top Rated */}
+              <HorizontalSection title="Top Rated">
+                {topRated?.map((r, i) => (
+                  <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                ))}
+              </HorizontalSection>
+
+              {/* Nuovi */}
+              <HorizontalSection title="Nuovi">
+                {newest?.map((r, i) => (
+                  <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                ))}
+              </HorizontalSection>
+
+              {/* Migliori Location */}
+              <HorizontalSection title="Migliori Location">
+                {bestLocation?.map((r, i) => (
+                  <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                ))}
+              </HorizontalSection>
+
+              {/* Migliori Menu */}
+              <HorizontalSection title="Migliori Menu">
+                {bestMenu?.map((r, i) => (
+                  <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                ))}
+              </HorizontalSection>
+
+              {/* Visitati (solo utenti loggati) */}
+              {user && visitedRestaurants.length > 0 && (
+                <HorizontalSection title="Visitati">
+                  {visitedRestaurants.map((r, i) => (
+                    <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                  ))}
+                </HorizontalSection>
               )}
-            </div>
+
+              {/* Preferiti (solo utenti loggati) */}
+              {user && favoriteRestaurants.length > 0 && (
+                <HorizontalSection title="I tuoi Preferiti">
+                  {favoriteRestaurants.map((r, i) => (
+                    <RestaurantCardSmall key={r.id} restaurant={r} index={i} />
+                  ))}
+                </HorizontalSection>
+              )}
+            </>
           )}
         </main>
-
-        {/* Bottom Navigation (Mobile) */}
-        <BottomNav />
       </div>
     </OnboardingWrapper>
   )

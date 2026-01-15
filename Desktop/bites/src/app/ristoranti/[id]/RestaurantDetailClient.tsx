@@ -204,18 +204,7 @@ export default function RestaurantDetailClient({ restaurant, photos }: Restauran
                     </motion.div>
                 )}
             </main>
-
-            {/* Footer */}
-            <footer className="bg-stone-900 text-stone-400 py-12 mt-16">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <a href="/" className="flex items-center justify-center gap-2 text-lg">
-                        <img src="/logo.svg" alt="RankBites" className="h-6 brightness-0 invert" />
-                    </a>
-                    <p className="text-sm mt-3 text-stone-500">
-                        Recensioni basate su dati reali di gruppo
-                    </p>
-                </div>
-            </footer>
         </div>
     )
 }
+
