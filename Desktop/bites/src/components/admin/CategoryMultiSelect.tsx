@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/Toast'
 
 interface Category {
     id: string
@@ -19,6 +20,7 @@ export default function CategoryMultiSelect({ selectedCategories, onChange }: Ca
     const [newCategory, setNewCategory] = useState('')
     const [loading, setLoading] = useState(true)
     const [adding, setAdding] = useState(false)
+    const { showToast } = useToast()
 
     useEffect(() => {
         loadCategories()
@@ -45,8 +47,7 @@ export default function CategoryMultiSelect({ selectedCategories, onChange }: Ca
         }
     }
 
-    const handleAddNewCategory = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleAddNewCategory = async () => {
         if (!newCategory.trim()) return
 
         const categoryName = newCategory.trim()
@@ -67,15 +68,24 @@ export default function CategoryMultiSelect({ selectedCategories, onChange }: Ca
         // Generate a simple emoji based on the category name
         const icon = getDefaultEmoji(categoryName)
 
-        const { data, error } = await supabase
-            .from('restaurant_categories')
-            .insert({ name: categoryName, icon })
-            .select()
-            .single()
+        try {
+            const { data, error } = await supabase
+                .from('restaurant_categories')
+                .insert({ name: categoryName, icon })
+                .select()
+                .single()
 
-        if (!error && data) {
-            setCategories([...categories, data].sort((a, b) => a.name.localeCompare(b.name)))
-            onChange([...selectedCategories, categoryName])
+            if (error) {
+                console.error('Error adding category:', error)
+                showToast('error', 'Errore', error.message)
+            } else if (data) {
+                setCategories([...categories, data].sort((a, b) => a.name.localeCompare(b.name)))
+                onChange([...selectedCategories, categoryName])
+                showToast('success', 'Categoria aggiunta', `"${categoryName}" con emoji ${icon}`)
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err)
+            showToast('error', 'Errore', 'Errore imprevisto nell\'aggiunta della categoria')
         }
 
         setNewCategory('')
@@ -155,22 +165,29 @@ export default function CategoryMultiSelect({ selectedCategories, onChange }: Ca
             </div>
 
             {/* Add New Category */}
-            <form onSubmit={handleAddNewCategory} className="flex gap-2">
+            <div className="flex gap-2">
                 <input
                     type="text"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleAddNewCategory()
+                        }
+                    }}
                     placeholder="Nuova categoria..."
                     className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
                 <button
-                    type="submit"
+                    type="button"
+                    onClick={handleAddNewCategory}
                     disabled={!newCategory.trim() || adding}
                     className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     {adding ? '...' : '+ Aggiungi'}
                 </button>
-            </form>
+            </div>
 
             {selectedCategories.length === 0 && (
                 <p className="text-xs text-stone-400">Seleziona almeno una categoria</p>

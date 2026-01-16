@@ -21,14 +21,11 @@ export default async function RestaurantCategoriesPage() {
         redirect('/admin')
     }
 
-    // Get unique restaurant categories from restaurants table
-    const { data: restaurants } = await supabase
-        .from('restaurants')
-        .select('category')
-
-    // Extract unique categories
-    const categoriesSet = new Set(restaurants?.map(r => r.category).filter(Boolean) || [])
-    const categories = Array.from(categoriesSet).sort()
+    // Get ALL restaurant categories from restaurant_categories table
+    const { data: categories } = await supabase
+        .from('restaurant_categories')
+        .select('*')
+        .order('name')
 
     return (
         <div className="space-y-6">
@@ -39,7 +36,7 @@ export default async function RestaurantCategoriesPage() {
                 </div>
             </div>
 
-            <RestaurantCategoriesTable categories={categories} />
+            <RestaurantCategoriesTable categories={categories || []} />
         </div>
     )
 }

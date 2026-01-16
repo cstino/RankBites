@@ -9,7 +9,7 @@ interface CategoryPillsProps {
 
 // Map categories to emojis
 const categoryEmojis: Record<string, string> = {
-    'Pizzeria': '🍕',
+    'Pizza': '🍕',
     'Ristorante Italiano': '🍝',
     'Sushi': '🍣',
     'Giapponese': '🍣',

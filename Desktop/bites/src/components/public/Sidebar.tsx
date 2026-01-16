@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import AuthModal from '@/components/auth/AuthModal'
 
 interface User {
     id: string
@@ -13,6 +14,7 @@ export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(false)
     const [user, setUser] = useState<User | null>(null)
     const [isAdmin, setIsAdmin] = useState(false)
+    const [showAuthModal, setShowAuthModal] = useState(false)
 
     useEffect(() => {
         const supabase = createClient()
@@ -142,7 +144,7 @@ export default function Sidebar() {
                                     Logout
                                 </button>
                             ) : (
-                                <a href="/login" className="sidebar-item group">
+                                <button onClick={() => setShowAuthModal(true)} className="sidebar-item group w-full text-left">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="sidebar-icon">
                                         <path
                                             className="group-hover:fill-orange-500 transition-colors"
@@ -155,12 +157,15 @@ export default function Sidebar() {
                                         />
                                     </svg>
                                     Login
-                                </a>
+                                </button>
                             )}
                         </li>
                     </ul>
                 </div>
             </div>
+
+            {/* Auth Modal */}
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </>
     )
 }

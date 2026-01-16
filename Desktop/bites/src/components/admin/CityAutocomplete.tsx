@@ -10,11 +10,9 @@ interface CityAutocompleteProps {
 }
 
 export default function CityAutocomplete({ selectedCity, onCityChange }: CityAutocompleteProps) {
-    // citiesData is an array of strings like "Abano Terme (PD)"
     const [inputValue, setInputValue] = useState(selectedCity)
 
-    // Filter cities based on input
-    // We limit to 50 results to prevent rendering issues with large lists
+    // Filter cities based on input (limit to 50 for performance)
     const filteredCities = useMemo(() => {
         if (!inputValue && !selectedCity) return []
 
@@ -33,37 +31,33 @@ export default function CityAutocomplete({ selectedCity, onCityChange }: CityAut
 
     const onInputChange = (value: string) => {
         setInputValue(value)
-        // If user clears input, clear selection ??
-        // Maybe strict matching isn't required, but for autocomplete it usually is.
-        // We'll let them type freely too?
-        // Hero UI Autocomplete usually allows custom value if allowed? 
-        // But for "Italian Cities" we want strict selection mostly.
-        // Assuming strict selection from list for now, but valid input is synced.
     }
 
     return (
         <div className="w-full">
             <Autocomplete
-                label="Città"
-                placeholder="Cerca un comune (es. Roma, Milano)..."
+                placeholder="Seleziona Comune"
                 defaultItems={filteredCities.map(city => ({ label: city, value: city }))}
                 items={filteredCities.map(city => ({ label: city, value: city }))}
                 inputValue={inputValue}
                 onInputChange={onInputChange}
                 onSelectionChange={onSelectionChange}
-                allowsCustomValue={true} // Allow typing if not in list? Or strictly Italian cities? 
-                // Using allowsCustomValue=true so onInputChange controls the value for free typing
-                // But we want to encourage selection.
+                allowsCustomValue={true}
                 variant="bordered"
                 classNames={{
                     base: "max-w-full",
-                    listboxWrapper: "max-h-[320px]",
+                    listboxWrapper: "max-h-[320px] bg-white shadow-xl rounded-lg",
                     selectorButton: "text-default-500"
                 }}
                 inputProps={{
                     classNames: {
                         input: "ml-1",
                         inputWrapper: "bg-white border border-stone-200 shadow-sm rounded-xl data-[hover=true]:border-orange-300 group-data-[focus=true]:border-orange-500"
+                    }
+                }}
+                listboxProps={{
+                    itemClasses: {
+                        base: "bg-white hover:bg-stone-50 data-[hover=true]:bg-stone-50"
                     }
                 }}
             >

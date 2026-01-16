@@ -4,67 +4,57 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+interface Category {
+    id: string
+    name: string
+    icon: string
+}
+
 interface RestaurantCategoriesTableProps {
-    categories: string[]
+    categories: Category[]
 }
 
 export default function RestaurantCategoriesTable({ categories }: RestaurantCategoriesTableProps) {
-    const [newCategory, setNewCategory] = useState('')
-    const [editingCategory, setEditingCategory] = useState<string | null>(null)
-    const [editValue, setEditValue] = useState('')
+    const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+    const [editName, setEditName] = useState('')
+    const [editIcon, setEditIcon] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
-    const handleAddCategory = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!newCategory.trim()) return
-
-        // For now, we'll just need to create a placeholder restaurant or store categories separately
-        // This is a simple implementation - categories are derived from restaurants
-        alert('Per aggiungere una nuova categoria, crea un ristorante con quella categoria.')
-        setNewCategory('')
-    }
-
-    const handleRenameCategory = async () => {
-        if (!editingCategory || !editValue.trim()) return
-        if (editValue === editingCategory) {
-            setEditingCategory(null)
-            return
-        }
+    const handleUpdate = async (categoryId: string) => {
+        if (!editName.trim()) return
 
         setLoading(true)
         const supabase = createClient()
 
-        // Update all restaurants with this category
         const { error } = await supabase
-            .from('restaurants')
-            .update({ category: editValue.trim() })
-            .eq('category', editingCategory)
+            .from('restaurant_categories')
+            .update({ name: editName.trim(), icon: editIcon })
+            .eq('id', categoryId)
 
         if (error) {
-            alert('Errore nel rinominare la categoria: ' + error.message)
+            alert('Errore: ' + error.message)
         } else {
             router.refresh()
         }
 
         setLoading(false)
-        setEditingCategory(null)
+        setEditingCategoryId(null)
     }
 
-    const handleDeleteCategory = async (category: string) => {
+    const handleDelete = async (categoryId: string, categoryName: string) => {
         const confirmed = confirm(
-            `Sei sicuro di voler eliminare la categoria "${category}"?\n\nTutti i ristoranti con questa categoria verranno aggiornati a "Altro".`
+            `Sei sicuro di voler eliminare la categoria "${categoryName}"?`
         )
         if (!confirmed) return
 
         setLoading(true)
         const supabase = createClient()
 
-        // Update all restaurants with this category to "Altro"
         const { error } = await supabase
-            .from('restaurants')
-            .update({ category: 'Altro' })
-            .eq('category', category)
+            .from('restaurant_categories')
+            .delete()
+            .eq('id', categoryId)
 
         if (error) {
             alert('Errore: ' + error.message)
@@ -77,7 +67,7 @@ export default function RestaurantCategoriesTable({ categories }: RestaurantCate
 
     return (
         <div className="space-y-6">
-            {/* Add new category info */}
+            {/* Info note */}
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm text-amber-800">
                     <strong>Nota:</strong> Le categorie sono derivate automaticamente dai ristoranti esistenti.
@@ -95,27 +85,34 @@ export default function RestaurantCategoriesTable({ categories }: RestaurantCate
                     <div className="divide-y divide-stone-100">
                         {categories.map((category) => (
                             <div
-                                key={category}
+                                key={category.id}
                                 className="flex items-center justify-between px-4 py-3 hover:bg-stone-50"
                             >
-                                {editingCategory === category ? (
+                                {editingCategoryId === category.id ? (
                                     <div className="flex items-center gap-2 flex-1">
                                         <input
                                             type="text"
-                                            value={editValue}
-                                            onChange={(e) => setEditValue(e.target.value)}
+                                            value={editIcon}
+                                            onChange={(e) => setEditIcon(e.target.value)}
+                                            className="w-16 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center"
+                                            placeholder="🍕"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={editName}
+                                            onChange={(e) => setEditName(e.target.value)}
                                             className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                             autoFocus
                                         />
                                         <button
-                                            onClick={handleRenameCategory}
+                                            onClick={() => handleUpdate(category.id)}
                                             disabled={loading}
                                             className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
                                         >
                                             ✓
                                         </button>
                                         <button
-                                            onClick={() => setEditingCategory(null)}
+                                            onClick={() => setEditingCategoryId(null)}
                                             className="px-3 py-2 bg-stone-200 text-stone-600 rounded-lg hover:bg-stone-300"
                                         >
                                             ✕
@@ -124,23 +121,24 @@ export default function RestaurantCategoriesTable({ categories }: RestaurantCate
                                 ) : (
                                     <>
                                         <div className="flex items-center gap-3">
-                                            <span className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                                                🍽️
+                                            <span className="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-2xl">
+                                                {category.icon || '🍽️'}
                                             </span>
-                                            <span className="font-medium text-stone-900">{category}</span>
+                                            <span className="font-medium text-stone-900">{category.name}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => {
-                                                    setEditingCategory(category)
-                                                    setEditValue(category)
+                                                    setEditingCategoryId(category.id)
+                                                    setEditName(category.name)
+                                                    setEditIcon(category.icon || '🍽️')
                                                 }}
                                                 className="px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
                                             >
                                                 Rinomina
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteCategory(category)}
+                                                onClick={() => handleDelete(category.id, category.name)}
                                                 disabled={loading}
                                                 className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                                             >

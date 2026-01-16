@@ -188,7 +188,7 @@ export async function POST(request: Request) {
         // It's a URL - try to expand and parse
         let expandedUrl = url
 
-        if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
+        if (url.includes('goo.gl') || url.includes('maps.app.goo.gl') || url.includes('share.google')) {
             try {
                 let currentUrl = url
                 let hops = 0

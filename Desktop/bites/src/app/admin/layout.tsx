@@ -11,12 +11,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         redirect('/login')
     }
 
-    // Get user profile
+    // Get user profile and verify admin role
     const { data: profile } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single()
+
+    // SECURITY: Only allow admin and super_admin roles
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'super_admin')) {
+        redirect('/')
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-50">
@@ -36,18 +41,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
                         {/* User Info */}
                         <div className="flex items-center gap-4">
-                            <div className="text-right hidden sm:block">
+                            <div className="text-right">
                                 <p className="text-sm font-medium text-stone-900">{profile?.name || user.email}</p>
                                 <p className="text-xs text-stone-500 capitalize">{profile?.role || 'admin'}</p>
                             </div>
-                            <form action="/api/auth/signout" method="post">
-                                <button
-                                    type="submit"
-                                    className="text-sm text-stone-600 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                                >
-                                    Esci
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
