@@ -203,7 +203,11 @@ export async function POST(request: Request) {
                         redirect: 'manual',
                         signal: controller.signal,
                         headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            // Cookie to bypass GDPR consent page
+                            'Cookie': 'SOCS=CAESEwgDEgk2MTQ0NzQ3MjAaAmVuIAEaBgiA_LyaBg; CONSENT=YES+1'
                         }
                     })
 
@@ -233,14 +237,95 @@ export async function POST(request: Request) {
                         expandedUrl = locationHeader
                         hops++
                     } else {
-                        // No more redirects
+                        // No more redirects - try to extract from body
                         if (response.status === 200) {
-                            // If we reached a 200 page, maybe the URL is in the body (client-side redirect)
                             const text = await response.text()
-                            const urlMatch = text.match(/https:\/\/maps\.google\.com\/maps\/place\/[^"]+/)
-                            if (urlMatch) {
-                                expandedUrl = urlMatch[0]
-                                console.log('📍 Found URL in body:', expandedUrl)
+                            console.log('📍 Got HTML body, searching for coordinates...')
+
+                            // Try multiple patterns to find coordinates in HTML
+
+                            // Pattern 1: Look for @lat,lng in any URL in the page
+                            const coordsInPage = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+                            if (coordsInPage) {
+                                result.latitude = coordsInPage[1]
+                                result.longitude = coordsInPage[2]
+                                console.log('📍 Coordinates found in page:', result.latitude, result.longitude)
+                            }
+
+                            // Pattern 2: Look for !3d...!4d... pattern
+                            if (!result.latitude) {
+                                const dataInPage = text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
+                                if (dataInPage) {
+                                    result.latitude = dataInPage[1]
+                                    result.longitude = dataInPage[2]
+                                    console.log('📍 Coordinates from data pattern:', result.latitude, result.longitude)
+                                }
+                            }
+
+                            // Pattern 3: Look for full maps URL
+                            const mapsUrlMatch = text.match(/https:\/\/www\.google\.[a-z]+\/maps\/place\/[^"']+/)
+                            if (mapsUrlMatch) {
+                                expandedUrl = mapsUrlMatch[0]
+                                console.log('📍 Found full maps URL:', expandedUrl)
+
+                                // Extract coordinates from the found URL
+                                const urlCoords = expandedUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+                                if (urlCoords) {
+                                    result.latitude = urlCoords[1]
+                                    result.longitude = urlCoords[2]
+                                }
+                                const urlData = expandedUrl.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)
+                                if (urlData && !result.latitude) {
+                                    result.latitude = urlData[1]
+                                    result.longitude = urlData[2]
+                                }
+                            }
+
+                            // Pattern 4: Look for consent redirect URL
+                            const consentMatch = text.match(/continue=([^"&]+)/)
+                            if (consentMatch && !result.latitude) {
+                                try {
+                                    const continueUrl = decodeURIComponent(consentMatch[1])
+                                    console.log('📍 Found continue URL:', continueUrl)
+                                    const contCoords = continueUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+                                    if (contCoords) {
+                                        result.latitude = contCoords[1]
+                                        result.longitude = contCoords[2]
+                                    }
+                                } catch (e) {
+                                    console.log('📍 Could not decode continue URL')
+                                }
+                            }
+
+                            // Pattern 5: Look for maps?q= search URL and extract place name for geocoding
+                            if (!result.latitude) {
+                                // Try to find place name from various patterns
+                                const searchMatch = text.match(/maps\?q=([^&"']+)/) ||
+                                    text.match(/\/maps\/place\/([^/@"']+)/)
+                                if (searchMatch) {
+                                    const placeName = decodeURIComponent(searchMatch[1].replace(/\+/g, ' '))
+                                    console.log('📍 Found place name for geocoding:', placeName)
+                                    result.name = placeName
+
+                                    // Geocode the place name
+                                    try {
+                                        const geocodeUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(placeName)}&format=json&limit=1`
+                                        const geocodeResponse = await fetch(geocodeUrl, {
+                                            headers: { 'User-Agent': 'RankBites-App/1.0' }
+                                        })
+
+                                        if (geocodeResponse.ok) {
+                                            const geocodeData = await geocodeResponse.json()
+                                            if (geocodeData && geocodeData.length > 0) {
+                                                result.latitude = geocodeData[0].lat
+                                                result.longitude = geocodeData[0].lon
+                                                console.log('📍 Coordinates from geocoding:', result.latitude, result.longitude)
+                                            }
+                                        }
+                                    } catch (geocodeError) {
+                                        console.error('📍 Geocoding error:', geocodeError)
+                                    }
+                                }
                             }
                         }
                         break

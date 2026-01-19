@@ -23,6 +23,8 @@ export default function NewRestaurantPage() {
     const [loading, setLoading] = useState(false)
     const [extractingInfo, setExtractingInfo] = useState(false)
     const [dataExtracted, setDataExtracted] = useState(false)
+    const [extractionStatus, setExtractionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+    const [extractionError, setExtractionError] = useState('')
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const supabase = createClient()
@@ -69,8 +71,14 @@ export default function NewRestaurantPage() {
     // Extract coordinates from Maps URL, then reverse geocode for city
     const handleMapsLinkChange = async (url: string) => {
         setMapsLink(url)
+        setExtractionError('')
 
-        if (!url) return
+        if (!url) {
+            setExtractionStatus('idle')
+            setLatitude('')
+            setLongitude('')
+            return
+        }
 
         let lat: string | null = null
         let lng: string | null = null
@@ -91,10 +99,23 @@ export default function NewRestaurantPage() {
             }
         }
 
+        // If coordinates found from URL pattern
+        if (lat && lng) {
+            setLatitude(lat)
+            setLongitude(lng)
+            setExtractionStatus('success')
+            if (!city) {
+                await reverseGeocode(lat, lng)
+            }
+            return
+        }
+
         // If no coordinates found locally and it's a short URL, call API to expand
-        if (!lat && (url.includes('goo.gl') || url.includes('maps.app.goo.gl') || url.includes('share.google'))) {
+        if (url.includes('goo.gl') || url.includes('maps.app.goo.gl') || url.includes('share.google')) {
             setExtractingInfo(true)
+            setExtractionStatus('loading')
             try {
+                console.log('📍 Calling API to expand URL:', url)
                 const response = await fetch('/api/maps/expand', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -103,30 +124,40 @@ export default function NewRestaurantPage() {
 
                 if (response.ok) {
                     const data = await response.json()
+                    console.log('📍 API response:', data)
                     if (data.latitude && data.longitude) {
                         lat = data.latitude
                         lng = data.longitude
-                        console.log('📍 Coordinates from API:', lat, lng)
+                        setLatitude(lat as string)
+                        setLongitude(lng as string)
+                        setExtractionStatus('success')
+                        console.log('📍 Coordinates saved:', lat, lng)
+                    } else {
+                        setExtractionStatus('error')
+                        setExtractionError('Impossibile estrarre le coordinate dal link')
                     }
                     if (data.city && !city) {
                         setCity(data.city)
                     }
+                } else {
+                    setExtractionStatus('error')
+                    setExtractionError('Errore nella richiesta al server')
                 }
             } catch (error) {
                 console.error('Error expanding URL:', error)
+                setExtractionStatus('error')
+                setExtractionError('Errore di connessione')
             }
             setExtractingInfo(false)
-        }
 
-        // If we found coordinates, set them and reverse geocode for city
-        if (lat && lng) {
-            setLatitude(lat)
-            setLongitude(lng)
-
-            // Only reverse geocode if city is not already set
-            if (!city) {
+            // Reverse geocode if we found coordinates
+            if (lat && lng && !city) {
                 await reverseGeocode(lat, lng)
             }
+        } else {
+            // URL doesn't match known patterns
+            setExtractionStatus('error')
+            setExtractionError('Formato link non riconosciuto. Usa un link di Google Maps.')
         }
     }
 
@@ -137,6 +168,13 @@ export default function NewRestaurantPage() {
 
         if (!name.trim()) {
             showToast('warning', 'Attenzione!', 'Inserisci il nome del ristorante')
+            setLoading(false)
+            return
+        }
+
+        // Validate coordinates if Maps link was provided
+        if (mapsLink && (!latitude || !longitude)) {
+            showToast('error', 'Coordinate mancanti!', 'Attendi che le coordinate vengano estratte dal link di Google Maps')
             setLoading(false)
             return
         }
@@ -306,7 +344,7 @@ export default function NewRestaurantPage() {
                         {/* Google Maps Link */}
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                             <label className="block text-sm font-semibold text-orange-800 mb-2">
-                                🗺️ Link Google Maps (per aprire posizione)
+                                🗺️ Link Google Maps *
                             </label>
                             <input
                                 type="url"
@@ -315,20 +353,37 @@ export default function NewRestaurantPage() {
                                 className="fancy-input !bg-white !border-orange-200"
                                 placeholder="https://maps.app.goo.gl/..."
                             />
-                            {latitude && longitude && (
-                                <p className="text-xs text-green-600 mt-2">
-                                    ✓ Coordinate rilevate: {latitude}, {longitude}
-                                </p>
-                            )}
-                            <p className="text-xs text-orange-600 mt-1">
-                                💡 Usa il link lungo di Maps per estrarre le coordinate
-                            </p>
+
+                            {/* Extraction Status */}
+                            <div className="mt-2 min-h-[24px]">
+                                {extractionStatus === 'loading' && (
+                                    <p className="text-xs text-blue-600 flex items-center gap-2">
+                                        <span className="inline-block w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+                                        Estrazione coordinate in corso...
+                                    </p>
+                                )}
+                                {extractionStatus === 'success' && latitude && longitude && (
+                                    <p className="text-xs text-green-600 font-medium">
+                                        ✓ Coordinate estratte: {parseFloat(latitude).toFixed(6)}, {parseFloat(longitude).toFixed(6)}
+                                    </p>
+                                )}
+                                {extractionStatus === 'error' && (
+                                    <p className="text-xs text-red-600">
+                                        ✗ {extractionError}
+                                    </p>
+                                )}
+                                {extractionStatus === 'idle' && mapsLink && (
+                                    <p className="text-xs text-orange-600">
+                                        💡 Incolla un link di Google Maps
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Submit */}
                         <button
                             type="submit"
-                            disabled={loading || uploading || !name.trim()}
+                            disabled={loading || uploading || !name.trim() || extractionStatus === 'loading' || (!!mapsLink && !latitude)}
                             className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all disabled:opacity-50 text-lg"
                         >
                             {uploading ? '📷 Caricamento foto...' : loading ? '⏳ Creazione...' : '+ Crea Ristorante'}
